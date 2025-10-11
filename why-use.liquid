@@ -1,0 +1,545 @@
+{% comment %}
+  Minimalistic Product Showcase Section
+  Clean design with blurred background text and centered product
+{% endcomment %}
+
+<section class="product-showcase" data-section-id="{{ section.id }}">
+  <div class="showcase-container">
+    <!-- Navigation Arrows -->
+   
+
+    <!-- Background Blurred Text -->
+    <div class="background-text" aria-hidden="true">
+      {% if section.settings.background_text != blank %}
+        {{ section.settings.background_text }}
+      {% else %}
+        ultra 01
+      {% endif %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="showcase-content">
+      <!-- Left Content -->
+      <div class="showcase-text">
+        {% if section.settings.heading != blank %}
+          <h1 class="showcase-heading">{{ section.settings.heading }}</h1>
+        {% endif %}
+
+        {% if section.settings.description != blank %}
+          <p class="showcase-description">{{ section.settings.description }}</p>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="showcase-actions">
+          {% if section.settings.button_text_1 != blank %}
+            <button class="action-btn add-to-cart-btn" data-product-id="{{ section.settings.product_id }}">
+              <span class="btn-icon">+</span>
+              {{ section.settings.button_text_1 }}
+            </button>
+          {% endif %}
+
+          {% if section.settings.button_text_2 != blank %}
+            <a href="{{ section.settings.button_url_2 | default: '#' }}" class="action-btn buy-now-btn">
+              {{ section.settings.button_text_2 }}
+              {% if section.settings.price != blank %}
+                | {{ section.settings.price }}
+              {% endif %}
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right Content - Product Image -->
+      <div class="showcase-image">
+        {% if section.settings.product_image != blank %}
+          <img
+            src="{{ section.settings.product_image | image_url: width: 600 }}"
+            srcset="{{ section.settings.product_image | image_url: width: 300 }} 300w,
+                    {{ section.settings.product_image | image_url: width: 600 }} 600w,
+                    {{ section.settings.product_image | image_url: width: 900 }} 900w"
+            sizes="(max-width: 768px) 100vw, 50vw"
+            alt="{{ section.settings.product_image.alt | default: 'Product showcase' | escape }}"
+            class="product-image"
+            loading="{% if section.index == 1 %}eager{% else %}lazy{% endif %}"
+          >
+        {% else %}
+          <div class="product-placeholder">
+            {{ 'product-1' | placeholder_svg_tag: 'placeholder-image' }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .product-showcase {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background-color: {{ section.settings.background_color | default: '#f8f8f8' }};
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .showcase-container {
+    position: relative;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Navigation Arrows */
+  .showcase-navigation {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 100%;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  .nav-arrow {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    pointer-events: all;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .nav-arrow:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+  }
+
+  .nav-arrow-left {
+    left: 20px;
+  }
+
+  .nav-arrow-right {
+    right: 20px;
+  }
+
+  .nav-arrow svg {
+    color: #333;
+  }
+
+  /* Background Blurred Text */
+  .background-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(150px, 20vw, 400px);
+    font-weight: 900;
+    color: rgba(0, 0, 0, 0.03);
+    white-space: nowrap;
+    user-select: none;
+    pointer-events: none;
+    z-index: 1;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.05em;
+  }
+
+  /* Main Content */
+  .showcase-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+    gap: 80px;
+  }
+
+  .showcase-text {
+    flex: 1;
+    max-width: 500px;
+  }
+
+  .showcase-heading {
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 400;
+    line-height: 1.2;
+    color: {{ section.settings.heading_color | default: '#333333' }};
+    margin: 0 0 30px 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .showcase-description {
+    font-size: 16px;
+    line-height: 1.6;
+    color: {{ section.settings.text_color | default: '#666666' }};
+    margin: 0 0 40px 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    max-width: 400px;
+  }
+
+  /* Action Buttons */
+  .showcase-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    background: none;
+    border: 2px solid #333;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .add-to-cart-btn {
+    background: transparent;
+  }
+
+  .add-to-cart-btn:hover {
+    background: #333;
+    color: white;
+  }
+
+  .buy-now-btn {
+    background: #333;
+    color: white;
+  }
+
+  .buy-now-btn:hover {
+    background: #000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-icon {
+    font-size: 16px;
+    font-weight: 300;
+  }
+
+  /* Product Image */
+  .showcase-image {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .product-image {
+    max-width: 100%;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.1));
+  }
+
+  .product-placeholder {
+    width: 400px;
+    height: 500px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .placeholder-image {
+    width: 50%;
+    height: 50%;
+    opacity: 0.3;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .showcase-container {
+      padding: 0 30px;
+    }
+
+    .showcase-content {
+      gap: 50px;
+    }
+
+    .background-text {
+      font-size: clamp(100px, 15vw, 300px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .product-showcase {
+      min-height: auto;
+      padding: 60px 0;
+    }
+
+    .showcase-container {
+      height: auto;
+      padding: 0 20px;
+    }
+
+    .showcase-content {
+      flex-direction: column;
+      gap: 40px;
+      text-align: center;
+    }
+
+    .showcase-text {
+      max-width: 100%;
+      order: 2;
+    }
+
+    .showcase-image {
+      order: 1;
+    }
+
+    .showcase-heading {
+      text-align: center;
+    }
+
+    .showcase-description {
+      text-align: center;
+      max-width: 100%;
+    }
+
+    .showcase-actions {
+      justify-content: center;
+    }
+
+    .nav-arrow {
+      width: 40px;
+      height: 40px;
+    }
+
+    .nav-arrow-left {
+      left: 10px;
+    }
+
+    .nav-arrow-right {
+      right: 10px;
+    }
+
+    .background-text {
+      font-size: clamp(80px, 25vw, 200px);
+      opacity: 0.5;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .showcase-container {
+      padding: 0 15px;
+    }
+
+    .action-btn {
+      padding: 10px 20px;
+      font-size: 13px;
+    }
+
+    .showcase-actions {
+      flex-direction: column;
+      width: 100%;
+      gap: 12px;
+    }
+
+    .action-btn {
+      width: 100%;
+      justify-content: center;
+      max-width: 280px;
+    }
+  }
+
+  /* Accessibility improvements */
+  @media (prefers-reduced-motion: reduce) {
+    .nav-arrow,
+    .action-btn,
+    .product-image {
+      transition: none;
+    }
+
+    .nav-arrow:hover,
+    .buy-now-btn:hover {
+      transform: none;
+    }
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: high) {
+    .background-text {
+      opacity: 0.1;
+    }
+
+    .action-btn {
+      border-width: 3px;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Navigation arrows functionality
+    const leftArrow = document.querySelector('.nav-arrow-left');
+    const rightArrow = document.querySelector('.nav-arrow-right');
+    
+    if (leftArrow) {
+      leftArrow.addEventListener('click', function() {
+        // Add your previous product logic here
+        console.log('Previous product');
+      });
+    }
+    
+    if (rightArrow) {
+      rightArrow.addEventListener('click', function() {
+        // Add your next product logic here
+        console.log('Next product');
+      });
+    }
+
+    // Add to cart functionality
+    const addToCartBtn = document.querySelector('.add-to-cart-btn');
+    if (addToCartBtn) {
+      addToCartBtn.addEventListener('click', function() {
+        const productId = this.dataset.productId;
+        // Add your add to cart logic here
+        console.log('Add to cart:', productId);
+      });
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Why Us",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f8f8f8"
+    },
+    {
+      "type": "text",
+      "id": "background_text",
+      "label": "Background text",
+      "default": "ultra 01",
+      "info": "Large blurred text in the background"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Our New Quality Product For Your Beauty"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#333333"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Serum is a lightweight, fast-absorbing formula designed to target breakouts and reduce skin redness. Infused with salicylic acid and soothing botanicals, it helps unclog pores and prevent future acne without stripping the skin."
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Product"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image",
+      "label": "Product image",
+      "info": "Recommended size: 600x800px or larger"
+    },
+    {
+      "type": "product",
+      "id": "product_id",
+      "label": "Product",
+      "info": "Used for add to cart functionality"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
+    },
+    {
+      "type": "text",
+      "id": "button_text_1",
+      "label": "First button text",
+      "default": "Add to Cart"
+    },
+    {
+      "type": "text",
+      "id": "button_text_2",
+      "label": "Second button text",
+      "default": "Buy"
+    },
+    {
+      "type": "url",
+      "id": "button_url_2",
+      "label": "Second button URL"
+    },
+    {
+      "type": "text",
+      "id": "price",
+      "label": "Price display",
+      "default": "$29.5",
+      "info": "Shown next to the second button"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Why Us",
+      "settings": {
+        "background_text": "ultra 01",
+        "heading": "Our New Quality Product For Your Beauty",
+        "description": "Serum is a lightweight, fast-absorbing formula designed to target breakouts and reduce skin redness. Infused with salicylic acid and soothing botanicals, it helps unclog pores and prevent future acne without stripping the skin.",
+        "button_text_1": "Add to Cart",
+        "button_text_2": "Buy",
+        "price": "$29.5"
+      }
+    }
+  ]
+}
+{% endschema %}

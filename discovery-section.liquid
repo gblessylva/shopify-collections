@@ -1,0 +1,253 @@
+{{ 'section-discovery.css' | asset_url | stylesheet_tag }}
+
+<section class="discovery-section section-{{ section.id }}-padding" style="background-color: {{ section.settings.background_color }};">
+  <div class="page-width">
+    <div class="discovery-container">
+      {% if section.settings.image != blank %}
+        <div class="discovery-image-wrapper">
+          <img
+            src="{{ section.settings.image | image_url: width: 800 }}"
+            alt="{{ section.settings.image.alt | escape }}"
+            class="discovery-image"
+            loading="lazy"
+            width="{{ section.settings.image.width }}"
+            height="{{ section.settings.image.height }}"
+            sizes="(min-width: 1200px) 50vw, (min-width: 750px) 50vw, 100vw"
+            
+          >
+        </div>
+      {% else %}
+        <div class="discovery-image-wrapper">
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'discovery-image placeholder' }}
+        </div>
+      {% endif %}
+
+      <div class="discovery-content">
+        {% if section.settings.heading != blank %}
+          <h2 
+            class="discovery-heading" 
+            style="font-size: {{ section.settings.heading_size }}px; color: {{ section.settings.heading_color }};"
+          >
+            {{ section.settings.heading }}
+          </h2>
+        {% endif %}
+
+        {% if section.settings.subheading != blank %}
+          <h3 
+            class="discovery-subheading" 
+            style="font-size: {{ section.settings.subheading_size }}px; color: {{ section.settings.subheading_color }};"
+          >
+            {{ section.settings.subheading }}
+          </h3>
+        {% endif %}
+
+        {% if section.settings.text != blank %}
+          <div 
+            class="discovery-text" 
+            style="font-size: {{ section.settings.text_size }}px; color: {{ section.settings.text_color }};"
+          >
+            {{ section.settings.text }}
+          </div>
+        {% endif %}
+
+        {% if section.settings.button_text != blank and section.settings.button_url != blank %}
+          <div class="discovery-button-wrapper">
+            <a 
+              href="{{ section.settings.button_url }}" 
+              class="discovery-button"
+              style="color: {{ section.settings.button_text_color }}; border-color: {{ section.settings.button_border_color }}; font-size: {{ section.settings.button_text_size }}px;"
+            >
+              {{ section.settings.button_text }}
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Discovery",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "THE GIFTING EXPERIENCE",
+      "label": "Heading"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 16,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading font size",
+      "default": 36
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#000000"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "default": "BYREDO Wrapping Service",
+      "label": "Subheading"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "min": 14,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "Subheading font size",
+      "default": 18
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading color",
+      "default": "#000000"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "default": "<p>For every order placed on BYREDO.COM you can select a gift box with signature BYREDO packaging. Invoices shipped in all orders do not show products or order totals.</p>",
+      "label": "Text"
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Text font size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "default": "DISCOVER GIFTING OPTIONS",
+      "label": "Button text"
+    },
+    {
+      "type": "url",
+      "id": "button_url",
+      "label": "Button link"
+    },
+    {
+      "type": "range",
+      "id": "button_text_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Button text size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_border_color",
+      "label": "Button border color",
+      "default": "#000000"
+    },
+    {
+      "type": "header",
+      "content": "Design"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "header",
+      "content": "Section Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "Discovery",
+      "category": "Content",
+      "settings": {
+        "heading": "THE GIFTING EXPERIENCE",
+        "subheading": "BYREDO Wrapping Service",
+        "text": "<p>For every order placed on BYREDO.COM you can select a gift box with signature BYREDO packaging. Invoices shipped in all orders do not show products or order totals.</p>",
+        "button_text": "DISCOVER GIFTING OPTIONS"
+      }
+    }
+  ]
+}
+{% endschema %}

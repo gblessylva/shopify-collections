@@ -1,0 +1,760 @@
+{% comment %}
+  Video Hero Section
+  Features three layout options: Vibe Hero, Sales Hero, and Text Hero
+  Full-screen video background with customizable overlay
+{% endcomment %}
+
+{% assign section_id = section.id | replace: '_', '' | downcase %}
+
+<style>
+  .video-hero-{{ section_id }} {
+    position: relative;
+    width: 100%;
+    height: 70vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+  }
+
+  .video-hero-{{ section_id }} .video-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  .video-hero-{{ section_id }} .video-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    z-index: 1;
+  }
+
+  .video-hero-{{ section_id }} .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: {{ section.settings.overlay_color }};
+    opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+    z-index: 2;
+  }
+
+  .video-hero-{{ section_id }} .content {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    color: {{ section.settings.text_color }};
+  }
+
+  /* Vibe Hero Layout */
+  .video-hero-{{ section_id }} .vibe-layout {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 70vh;
+    padding:0;
+    padding-top: 60px;
+    max-width:80%;
+    margin:0 auto;
+  }
+
+  .video-hero-{{ section_id }} .vibe-top {
+    text-align: left;
+    max-width:500px;
+  }
+
+  .video-hero-{{ section_id }} .vibe-heading {
+    font-size: {{ section.settings.heading_size }}px;
+    font-weight: 700;
+    margin: 0 0 20px;
+    line-height: 1.2;
+    font-family: var(--font-heading-family);
+  }
+
+  .video-hero-{{ section_id }} .vibe-paragraph {
+    font-size: {{ section.settings.paragraph_size }}px;
+    margin: 0;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+    font-family: var(--font-body-family);
+  }
+
+  .video-hero-{{ section_id }} .vibe-cards {
+    display:flex;
+    gap: 20px;
+  }
+
+  .video-hero-{{ section_id }} .card {
+    position: relative;
+    background: rgba(255, 255, 255, {{ section.settings.card_opacity | divided_by: 100.0 }});
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0;
+    padding: 10px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    overflow: hidden;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .video-hero-{{ section_id }} .card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, {{ section.settings.card_hover_opacity | divided_by: 100.0 }});
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  }
+
+
+  .video-hero-{{ section_id }} .card-name {
+    {% comment %} font-size: {{ section.settings.card_title_size }}px;
+    font-weight: 600; {% endcomment %}
+    {% comment %} margin: 0 0 10px; {% endcomment %}
+    font-family: var(--font-heading-family);
+    padding-top:10px;
+  }
+
+  .video-hero-{{ section_id }} .card-description {
+    font-size: {{ section.settings.card_description_size }}px;
+    margin: 0 0 0 0;
+    opacity: 0;
+    max-height: 0;
+    transition: all 0.4s ease;
+    line-height: 1.4;
+    font-family: var(--font-body-family);
+  }
+
+  .video-hero-{{ section_id }} .vibe-card-button {
+    background-color: #000;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0;
+    max-height: 0;
+    transition: all 0.4s ease;
+    font-family: var(--font-body-family);
+  }
+
+  .video-hero-{{ section_id }} .card:hover .card-description {
+    opacity: 1;
+    padding:5px 0;
+    max-height: 100px;
+  }
+
+  .video-hero-{{ section_id }} .card:hover .vibe-card-button {
+    opacity: 1;
+    padding:5px 20px;
+    max-height: 50px;
+  }
+
+  /* Sales Hero Layout */
+  .video-hero-{{ section_id }} .sales-layout {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    height: 100vh;
+    padding: 0 0 60px;
+    max-width:90%;
+    margin:0 auto;
+  }
+
+  .video-hero-{{ section_id }} .sales-left {
+    flex: 1;
+    max-width: 50%;
+  }
+
+  .video-hero-{{ section_id }} .sales-right {
+    flex: 1;
+    max-width: 50%;
+    text-align: right;
+  }
+
+  .video-hero-{{ section_id }} .sales-heading {
+    font-size: {{ section.settings.heading_size }}px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+    font-family: var(--font-heading-family);
+  }
+
+  .video-hero-{{ section_id }} .sales-paragraph {
+    font-size: {{ section.settings.paragraph_size }}px;
+    margin: 0 0 20px;
+    line-height: 1.6;
+    font-family: var(--font-body-family);
+  }
+
+  .video-hero-{{ section_id }} .sales-button {
+    background-color: {{ section.settings.button_color }};
+    color: {{ section.settings.button_text_color }};
+    border: none;
+    padding: 15px 30px;
+    border-radius: 6px;
+    font-size: {{ section.settings.button_size }}px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    font-family: var(--font-body-family);
+  }
+
+  .video-hero-{{ section_id }} .sales-button:hover {
+    background-color: {{ section.settings.button_hover_color }};
+    transform: translateY(-2px);
+  }
+
+  /* Text Hero Layout */
+  .video-hero-{{ section_id }} .text-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100vh;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .video-hero-{{ section_id }} .text-heading {
+    font-size: {{ section.settings.heading_size }}px;
+    font-weight: 700;
+    margin: 0 0 30px;
+    line-height: 1.2;
+    font-family: var(--font-heading-family);
+  }
+
+  .video-hero-{{ section_id }} .text-paragraph {
+    font-size: {{ section.settings.paragraph_size }}px;
+    margin: 0 0 40px;
+    line-height: 1.6;
+    font-family: var(--font-body-family);
+  }
+
+  .video-hero-{{ section_id }} .text-button {
+    background-color: {{ section.settings.button_color }};
+    color: {{ section.settings.button_text_color }};
+    border: none;
+    padding: 15px 30px;
+    border-radius: 6px;
+    font-size: {{ section.settings.button_size }}px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    font-family: var(--font-body-family);
+  }
+
+  .video-hero-{{ section_id }} .text-button:hover {
+    background-color: {{ section.settings.button_hover_color }};
+    transform: translateY(-2px);
+  }
+
+  /* Responsive Design */
+  @media screen and (max-width: 768px) {
+    .video-hero-{{ section_id }} .vibe-heading,
+    .video-hero-{{ section_id }} .sales-heading,
+    .video-hero-{{ section_id }} .text-heading {
+      font-size: {{ section.settings.heading_size | times: 0.7 }}px;
+    }
+
+    .video-hero-{{ section_id }} .vibe-paragraph,
+    .video-hero-{{ section_id }} .sales-paragraph,
+    .video-hero-{{ section_id }} .text-paragraph {
+      font-size: {{ section.settings.paragraph_size | times: 0.9 }}px;
+    }
+
+    .video-hero-{{ section_id }} .vibe-cards {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+
+    .video-hero-{{ section_id }} .sales-layout {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 40px;
+      padding: 60px 0;
+    }
+
+    .video-hero-{{ section_id }} .sales-left,
+    .video-hero-{{ section_id }} .sales-right {
+      max-width: 100%;
+    }
+
+    .video-hero-{{ section_id }} .sales-right {
+      text-align: center;
+    }
+
+    .video-hero-{{ section_id }} .card {
+      padding: 20px 15px;
+      min-height: 100px;
+    }
+
+    .video-hero-{{ section_id }} .card-icon {
+      width: {{ section.settings.card_icon_size | times: 0.8 }}px;
+      height: {{ section.settings.card_icon_size | times: 0.8 }}px;
+    }
+  }
+
+  @media screen and (max-width: 480px) {
+    .video-hero-{{ section_id }} .vibe-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="video-hero-{{ section_id }}" {{ section.shopify_attributes }}>
+  {% comment %} Video Background {% endcomment %}
+  {% if section.settings.video_url != blank %}
+    <video
+      class="video-background"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+    >
+      <source src="{{ section.settings.video_url }}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  {% else %}
+    <div class="video-placeholder"></div>
+  {% endif %}
+
+  {% comment %} Overlay {% endcomment %}
+  <div class="overlay"></div>
+
+  {% comment %} Content {% endcomment %}
+  <div class="content">
+    {% case section.settings.layout %}
+      {% when 'vibe' %}
+        <div class="vibe-layout page-width">
+          <div class="vibe-top">
+            {% if section.settings.heading != blank %}
+              <h1 class="vibe-heading">{{ section.settings.heading }}</h1>
+            {% endif %}
+            {% if section.settings.paragraph != blank %}
+              <p class="vibe-paragraph">{{ section.settings.paragraph }}</p>
+            {% endif %}
+          </div>
+
+          <div class="vibe-cards">
+            {% for i in (1..4) %}
+              {% liquid
+                assign collection_key = 'card_' | append: i | append: '_collection'
+                assign title_key = 'card_' | append: i | append: '_title'
+                assign description_key = 'card_' | append: i | append: '_description'
+                assign collection = section.settings[collection_key]
+                assign title = section.settings[title_key]
+                assign description = section.settings[description_key]
+              %}
+
+              {% if collection != blank or title != blank %}
+                <a
+                  href="{% if collection != blank %}{{ collection.url }}{% else %}#{% endif %}"
+                  class="card"
+                >
+                 
+                  <h3 class="card-name">
+                    {% if title != blank %}
+                      {{ title }}
+                    {% elsif collection != blank %}
+                      {{ collection.title }}
+                    {% else %}
+                      Card {{ i }}
+                    {% endif %}
+                  </h3>
+                  <p class="card-description">
+                    {% if description != blank %}
+                      {{ description }}
+                    {% elsif collection != blank and collection.description != blank %}
+                      {{ collection.description | truncate: 100 }}
+                    {% else %}
+                      Discover our amazing collection of products
+                    {% endif %}
+                  </p>
+                  <button class="vibe-card-button">
+                    Shop Now
+                  </button>
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+      {% when 'sales' %}
+        <div class="sales-layout page-width">
+          <div class="sales-left">
+            {% if section.settings.heading != blank %}
+              <h1 class="sales-heading">{{ section.settings.heading }}</h1>
+            {% endif %}
+          </div>
+          <div class="sales-right">
+            {% if section.settings.paragraph != blank %}
+              <p class="sales-paragraph">{{ section.settings.paragraph }}</p>
+            {% endif %}
+            {% if section.settings.button_text != blank %}
+              <a href="{{ section.settings.button_link | default: '#' }}" class="sales-button">
+                {{ section.settings.button_text }}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+      {% when 'text' %}
+        <div class="text-layout">
+          {% if section.settings.heading != blank %}
+            <h1 class="text-heading">{{ section.settings.heading }}</h1>
+          {% endif %}
+          {% if section.settings.paragraph != blank %}
+            <p class="text-paragraph">{{ section.settings.paragraph }}</p>
+          {% endif %}
+          {% if section.settings.button_text != blank %}
+            <a href="{{ section.settings.button_link | default: '#' }}" class="text-button">
+              {{ section.settings.button_text }}
+            </a>
+          {% endif %}
+        </div>
+    {% endcase %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Video Hero",
+  "class": "section-video-hero",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout Options"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Hero Layout",
+      "options": [
+        {
+          "value": "vibe",
+          "label": "Vibe Hero (Cards)"
+        },
+        {
+          "value": "sales",
+          "label": "Sales Hero (Split)"
+        },
+        {
+          "value": "text",
+          "label": "Text Hero (Centered)"
+        }
+      ],
+      "default": "vibe"
+    },
+    {
+      "type": "header",
+      "content": "Video Background"
+    },
+    {
+      "type": "url",
+      "id": "video_url",
+      "label": "Video URL",
+      "info": "Upload your video to Files in Shopify admin, then copy the URL here"
+    },
+    {
+      "type": "header",
+      "content": "Overlay Settings"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "label": "Overlay Opacity",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Welcome to Our Store"
+    },
+    {
+      "type": "textarea",
+      "id": "paragraph",
+      "label": "Description",
+      "default": "Discover our amazing collection of products crafted with care and attention to detail."
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button Text",
+      "default": "Shop All"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "header",
+      "content": "Typography & Colors"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 24,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading Size",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "paragraph_size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Paragraph Size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "button_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Button Font Size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Button Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button Text Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_color",
+      "label": "Button Hover Color",
+      "default": "#f0f0f0"
+    },
+    {
+      "type": "header",
+      "content": "Vibe Hero Cards"
+    },
+    {
+      "type": "range",
+      "id": "card_opacity",
+      "min": 10,
+      "max": 50,
+      "step": 5,
+      "unit": "%",
+      "label": "Card Opacity",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "card_hover_opacity",
+      "min": 20,
+      "max": 60,
+      "step": 5,
+      "unit": "%",
+      "label": "Card Hover Opacity",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Card Border Radius",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "card_icon_size",
+      "min": 30,
+      "max": 60,
+      "step": 5,
+      "unit": "px",
+      "label": "Card Icon Size",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "card_title_size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Card Title Size",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "card_description_size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Card Description Size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "card_button_color",
+      "label": "Card Button Color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "card_button_text_color",
+      "label": "Card Button Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Card 1"
+    },
+    {
+      "type": "collection",
+      "id": "card_1_collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "card_1_title",
+      "label": "Custom Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_1_description",
+      "label": "Custom Description"
+    },
+    {
+      "type": "header",
+      "content": "Card 2"
+    },
+    {
+      "type": "collection",
+      "id": "card_2_collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "card_2_title",
+      "label": "Custom Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_2_description",
+      "label": "Custom Description"
+    },
+    {
+      "type": "header",
+      "content": "Card 3"
+    },
+    {
+      "type": "collection",
+      "id": "card_3_collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "card_3_title",
+      "label": "Custom Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_3_description",
+      "label": "Custom Description"
+    },
+    {
+      "type": "header",
+      "content": "Card 4"
+    },
+    {
+      "type": "collection",
+      "id": "card_4_collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "card_4_title",
+      "label": "Custom Title"
+    },
+    {
+      "type": "textarea",
+      "id": "card_4_description",
+      "label": "Custom Description"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video Hero",
+      "settings": {
+        "layout": "vibe",
+        "heading": "Welcome to Our Store",
+        "paragraph": "Discover our amazing collection of products crafted with care and attention to detail.",
+        "button_text": "Shop All",
+        "card_1_title": "New Arrivals",
+        "card_1_description": "Check out our latest products",
+        "card_2_title": "Best Sellers",
+        "card_2_description": "Our most popular items",
+        "card_3_title": "Sale Items",
+        "card_3_description": "Great deals and discounts",
+        "card_4_title": "Featured",
+        "card_4_description": "Handpicked favorites"
+      }
+    }
+  ]
+}
+{% endschema %}
