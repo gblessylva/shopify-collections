@@ -1,0 +1,667 @@
+{% doc %}
+  @prompt
+    Create another section for " sticky scroll section" Here's what it does:
+    Key Features:
+    Left Column (45%): Stays fixed/sticky in the viewport with centered content (heading, paragraph, and CTA button) while you scroll
+    Right Column (55%): Contains 30 cards of products in a 2-column grid that scrolls naturally
+    The left section uses position: sticky so it remains visible until all the cards have scrolled past
+    
+    Design Highlights:
+    Smooth hover effects on both the button and cards
+    Responsive design (stacks to single column on mobile)
+    Clean, modern aesthetic with proper spacing, remove the description in the product cards. Add a button for quick add to cart
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-sticky-scroll-{{ ai_gen_id }} {
+    display: flex;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: {{ block.settings.section_padding }}px 20px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .ai-sticky-scroll-left-{{ ai_gen_id }} {
+    flex: 0 0 45%;
+    position: sticky;
+    top: {{ block.settings.sticky_top_offset }}px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: {{ block.settings.content_alignment }};
+    text-align: {{ block.settings.text_alignment }};
+    padding: 40px 20px;
+  }
+
+  .ai-sticky-scroll-heading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.heading_size }}px;
+    font-weight: 600;
+    color: {{ block.settings.heading_color }};
+    margin: 0 0 20px;
+    line-height: 1.2;
+  }
+
+  .ai-sticky-scroll-text-{{ ai_gen_id }} {
+    font-size: {{ block.settings.text_size }}px;
+    color: {{ block.settings.text_color }};
+    line-height: 1.6;
+    margin: 0 0 30px;
+  }
+
+  .ai-sticky-scroll-button-{{ ai_gen_id }} {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 30px;
+    background-color: {{ block.settings.button_color }};
+    color: {{ block.settings.button_text_color }};
+    text-decoration: none;
+    border-radius: {{ block.settings.button_radius }}px;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .ai-sticky-scroll-button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_color }};
+    color: {{ block.settings.button_hover_text_color }};
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-sticky-scroll-right-{{ ai_gen_id }} {
+    flex: 0 0 55%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: {{ block.settings.card_gap }}px;
+    padding: 20px 0;
+  }
+
+  .ai-sticky-scroll-card-{{ ai_gen_id }} {
+    background-color: {{ block.settings.card_background }};
+    border-radius: {{ block.settings.card_radius }}px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid {{ block.settings.card_border_color }};
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+  }
+
+  .ai-sticky-scroll-card-{{ ai_gen_id }}:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .ai-sticky-scroll-card-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 200px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ai-sticky-scroll-card-image-{{ ai_gen_id }} img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .ai-sticky-scroll-card-{{ ai_gen_id }}:hover .ai-sticky-scroll-card-image-{{ ai_gen_id }} img {
+    transform: scale(1.05);
+  }
+
+  .ai-sticky-scroll-card-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ai-sticky-scroll-card-placeholder-{{ ai_gen_id }} svg {
+    width: 60px;
+    height: 60px;
+    opacity: 0.5;
+  }
+
+  .ai-sticky-scroll-card-content-{{ ai_gen_id }} {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .ai-sticky-scroll-card-title-{{ ai_gen_id }} {
+    font-size: 18px;
+    font-weight: 600;
+    color: {{ block.settings.card_title_color }};
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  .ai-sticky-scroll-card-price-{{ ai_gen_id }} {
+    font-size: 16px;
+    font-weight: 500;
+    color: {{ block.settings.card_price_color }};
+    margin: 0;
+  }
+
+  .ai-sticky-scroll-card-link-{{ ai_gen_id }} {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+
+  .ai-sticky-scroll-add-to-cart-{{ ai_gen_id }} {
+    width: 100%;
+    padding: 12px 16px;
+    background-color: {{ block.settings.add_to_cart_color }};
+    color: {{ block.settings.add_to_cart_text_color }};
+    border: none;
+    border-radius: {{ block.settings.add_to_cart_radius }}px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: auto;
+  }
+
+  .ai-sticky-scroll-add-to-cart-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.add_to_cart_hover_color }};
+    color: {{ block.settings.add_to_cart_hover_text_color }};
+    transform: translateY(-1px);
+  }
+
+  .ai-sticky-scroll-add-to-cart-{{ ai_gen_id }}:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .ai-sticky-scroll-add-to-cart-{{ ai_gen_id }}.loading {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .ai-sticky-scroll-empty-state-{{ ai_gen_id }} {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    font-style: italic;
+  }
+
+  @media screen and (max-width: 768px) {
+    .ai-sticky-scroll-{{ ai_gen_id }} {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .ai-sticky-scroll-left-{{ ai_gen_id }} {
+      position: static;
+      flex: none;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .ai-sticky-scroll-right-{{ ai_gen_id }} {
+      flex: none;
+      grid-template-columns: 1fr;
+    }
+
+    .ai-sticky-scroll-heading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.heading_size | times: 0.8 }}px;
+    }
+
+    .ai-sticky-scroll-card-image-{{ ai_gen_id }} {
+      height: 180px;
+    }
+  }
+{% endstyle %}
+
+<sticky-scroll-section-{{ ai_gen_id }}
+  class="ai-sticky-scroll-{{ ai_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="ai-sticky-scroll-left-{{ ai_gen_id }}">
+    {% if block.settings.heading != blank %}
+      <h2 class="ai-sticky-scroll-heading-{{ ai_gen_id }}">{{ block.settings.heading }}</h2>
+    {% endif %}
+    
+    {% if block.settings.description != blank %}
+      <div class="ai-sticky-scroll-text-{{ ai_gen_id }}">{{ block.settings.description }}</div>
+    {% endif %}
+    
+    {% if block.settings.button_text != blank and block.settings.button_link != blank %}
+      <a href="{{ block.settings.button_link }}" class="ai-sticky-scroll-button-{{ ai_gen_id }}">
+        {{ block.settings.button_text }}
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="ai-sticky-scroll-right-{{ ai_gen_id }}">
+    {% if block.settings.collection != blank %}
+      {% assign products_to_show = block.settings.collection.products | limit: 30 %}
+      {% for product in products_to_show %}
+        <div class="ai-sticky-scroll-card-{{ ai_gen_id }}">
+          <a href="{{ product.url }}" class="ai-sticky-scroll-card-link-{{ ai_gen_id }}">
+            <div class="ai-sticky-scroll-card-image-{{ ai_gen_id }}">
+              {% if product.featured_image %}
+                <img
+                  src="{{ product.featured_image | image_url: width: 400 }}"
+                  alt="{{ product.featured_image.alt | escape }}"
+                  loading="lazy"
+                  width="400"
+                  height="400"
+                >
+              {% else %}
+                <div class="ai-sticky-scroll-card-placeholder-{{ ai_gen_id }}">
+                  {{ 'product-1' | placeholder_svg_tag }}
+                </div>
+              {% endif %}
+            </div>
+          </a>
+          
+          <div class="ai-sticky-scroll-card-content-{{ ai_gen_id }}">
+            <a href="{{ product.url }}" class="ai-sticky-scroll-card-link-{{ ai_gen_id }}">
+              <h3 class="ai-sticky-scroll-card-title-{{ ai_gen_id }}">{{ product.title }}</h3>
+              <div class="ai-sticky-scroll-card-price-{{ ai_gen_id }}">{{ product.price | money }}</div>
+            </a>
+            
+            {% if product.available %}
+              <button
+                class="ai-sticky-scroll-add-to-cart-{{ ai_gen_id }}"
+                data-product-id="{{ product.id }}"
+                data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+                onclick="addToCart{{ ai_gen_id }}(this)"
+              >
+                {{ block.settings.add_to_cart_text }}
+              </button>
+            {% else %}
+              <button
+                class="ai-sticky-scroll-add-to-cart-{{ ai_gen_id }}"
+                disabled
+              >
+                Sold out
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="ai-sticky-scroll-empty-state-{{ ai_gen_id }}">
+        Select a collection to display products
+      </div>
+    {% endif %}
+  </div>
+</sticky-scroll-section-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class StickyScrollSection{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.setupStickyBehavior();
+      }
+
+      setupStickyBehavior() {
+        const leftColumn = this.querySelector('.ai-sticky-scroll-left-{{ ai_gen_id }}');
+        const rightColumn = this.querySelector('.ai-sticky-scroll-right-{{ ai_gen_id }}');
+        
+        if (!leftColumn || !rightColumn) return;
+
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              leftColumn.style.opacity = '1';
+            } else {
+              leftColumn.style.opacity = '0.8';
+            }
+          });
+        }, {
+          threshold: 0.1
+        });
+
+        observer.observe(rightColumn);
+      }
+    }
+
+    window.addToCart{{ ai_gen_id }} = function(button) {
+      const variantId = button.getAttribute('data-variant-id');
+      const originalText = button.textContent;
+      
+      button.classList.add('loading');
+      button.textContent = 'Adding...';
+      button.disabled = true;
+
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: variantId,
+          quantity: 1
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        button.textContent = 'Added!';
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('loading');
+          button.disabled = false;
+        }, 1500);
+
+        if (window.theme && window.theme.cart) {
+          window.theme.cart.updateCartCount();
+        }
+        
+        document.dispatchEvent(new CustomEvent('cart:updated'));
+      })
+      .catch(error => {
+        console.error('Error adding to cart:', error);
+        button.textContent = 'Error';
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('loading');
+          button.disabled = false;
+        }, 1500);
+      });
+    };
+
+    customElements.define('sticky-scroll-section-{{ ai_gen_id }}', StickyScrollSection{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Sticky scroll section",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Discover Our Products"
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Description",
+      "default": "<p>Explore our carefully curated collection of premium products designed to enhance your lifestyle.</p>"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Shop Collection"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "add_to_cart_text",
+      "label": "Add to cart button text",
+      "default": "Add to Cart"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Content alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "flex-end",
+          "label": "Bottom"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "section_padding",
+      "min": 20,
+      "max": 100,
+      "step": 10,
+      "unit": "px",
+      "label": "Section padding",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "sticky_top_offset",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "px",
+      "label": "Sticky top offset",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "min": 10,
+      "max": 40,
+      "step": 5,
+      "unit": "px",
+      "label": "Card gap",
+      "default": 20
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "button_color",
+      "label": "Button color",
+      "default": "#f12a0b"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_color",
+      "label": "Button hover color",
+      "default": "#d12409"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Button hover text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 24,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 42
+    },
+    {
+      "type": "range",
+      "id": "text_size",
+      "min": 14,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Text size",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Button border radius",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Card border color",
+      "default": "#e5e5e5"
+    },
+    {
+      "type": "color",
+      "id": "card_title_color",
+      "label": "Card title color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "card_price_color",
+      "label": "Card price color",
+      "default": "#f12a0b"
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Card border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Add to cart button"
+    },
+    {
+      "type": "color",
+      "id": "add_to_cart_color",
+      "label": "Add to cart color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "add_to_cart_text_color",
+      "label": "Add to cart text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "add_to_cart_hover_color",
+      "label": "Add to cart hover color",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "add_to_cart_hover_text_color",
+      "label": "Add to cart hover text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "add_to_cart_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Add to cart border radius",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Sticky scroll section"
+    }
+  ]
+}
+{% endschema %}
