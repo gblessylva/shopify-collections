@@ -1,0 +1,1011 @@
+{% doc %}
+  @prompt
+    Generate a new section. The section has to rows. Top is the heading, description and list of buttons for product filter by collection.
+    Bottom is a product grid. The first product on the grid is 30% wide and 100% high while rest of the while there are three products per row of two rows in the right side of the product grid, The products are not showing up after selecting a collection, Modify, this is looking good. But add pagination. The max product to display after the first one is 6. With the first one we have a max 7 product. When the filter is activated for a collection the first product in that collection occupies the first product space
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .dinger-product-grid-section-{{ ai_gen_id }} {
+    padding: {{ block.settings.section_padding_top }}px 0 {{ block.settings.section_padding_bottom }}px;
+    background-color: {{ block.settings.background_color }};
+  }
+
+  .dinger-product-grid-container-{{ ai_gen_id }} {
+    max-width: {{ block.settings.container_width }}px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  .dinger-product-grid-header-{{ ai_gen_id }} {
+    text-align: {{ block.settings.text_alignment }};
+    margin-bottom: 40px;
+  }
+
+  .dinger-product-grid-heading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.heading_size }}px;
+    color: {{ block.settings.heading_color }};
+    margin: 0 0 16px;
+  }
+
+  .dinger-product-grid-description-{{ ai_gen_id }} {
+    font-size: {{ block.settings.description_size }}px;
+    color: {{ block.settings.description_color }};
+    margin: 0 0 24px;
+  }
+
+  .dinger-product-grid-filters-{{ ai_gen_id }} {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: {{ block.settings.text_alignment }};
+  }
+
+  .dinger-product-grid-filter-btn-{{ ai_gen_id }} {
+    padding: 12px 24px;
+    background-color: {{ block.settings.filter_button_bg }};
+    color: {{ block.settings.filter_button_text }};
+    border: 1px solid {{ block.settings.filter_button_border }};
+    border-radius: {{ block.settings.filter_button_radius }}px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+  }
+
+  .dinger-product-grid-filter-btn-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.filter_button_hover_bg }};
+    color: {{ block.settings.filter_button_hover_text }};
+  }
+
+  .dinger-product-grid-filter-btn-{{ ai_gen_id }}.active {
+    background-color: {{ block.settings.filter_button_active_bg }};
+    color: {{ block.settings.filter_button_active_text }};
+    border-color: {{ block.settings.filter_button_active_bg }};
+  }
+
+  .dinger-product-grid-main-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: 40% 1fr;
+    gap: {{ block.settings.grid_gap }}px;
+    margin-top: 40px;
+  }
+
+  .dinger-product-grid-featured-{{ ai_gen_id }} {
+    position: relative;
+    overflow: hidden;
+    border-radius: {{ block.settings.product_card_radius }}px;
+  }
+
+  .dinger-product-grid-featured-link-{{ ai_gen_id }} {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+  }
+
+  .dinger-product-grid-featured-image-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .dinger-product-grid-featured-placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    height: 100%;
+    min-height: 500px;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dinger-product-grid-featured-placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    max-width: 200px;
+    max-height: 200px;
+  }
+
+  .dinger-product-grid-featured-info-{{ ai_gen_id }} {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+    color: #ffffff;
+  }
+
+  .dinger-product-grid-featured-title-{{ ai_gen_id }} {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .dinger-product-grid-featured-price-{{ ai_gen_id }} {
+    font-size: 18px;
+    font-weight: 500;
+  }
+
+  .dinger-product-grid-regular-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: {{ block.settings.grid_gap }}px;
+  }
+
+  .dinger-product-grid-card-{{ ai_gen_id }} {
+    border-radius: {{ block.settings.product_card_radius }}px;
+    overflow: hidden;
+    background-color: {{ block.settings.card_background }};
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+  }
+
+  .dinger-product-grid-card-{{ ai_gen_id }}:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .dinger-product-grid-card-image-wrapper-{{ ai_gen_id }} {
+    position: relative;
+    width: 100%;
+    padding-bottom: 100%;
+    overflow: hidden;
+  }
+
+  .dinger-product-grid-card-image-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .dinger-product-grid-card-placeholder-{{ ai_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .dinger-product-grid-card-placeholder-{{ ai_gen_id }} svg {
+    width: 60%;
+    height: 60%;
+  }
+
+  .dinger-product-grid-card-info-{{ ai_gen_id }} {
+    padding: 16px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dinger-product-grid-card-title-{{ ai_gen_id }} {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 8px;
+    color: {{ block.settings.card_text_color }};
+  }
+
+  .dinger-product-grid-card-price-{{ ai_gen_id }} {
+    font-size: 16px;
+    font-weight: 600;
+    color: {{ block.settings.card_price_color }};
+    margin-top: auto;
+  }
+
+  .dinger-product-grid-hidden-{{ ai_gen_id }} {
+    display: none;
+  }
+
+  .dinger-product-grid-empty-state-{{ ai_gen_id }} {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    font-size: 16px;
+  }
+
+  .dinger-product-grid-pagination-{{ ai_gen_id }} {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 40px;
+  }
+
+  .dinger-product-grid-pagination-btn-{{ ai_gen_id }} {
+    padding: 10px 20px;
+    background-color: {{ block.settings.filter_button_bg }};
+    color: {{ block.settings.filter_button_text }};
+    border: 1px solid {{ block.settings.filter_button_border }};
+    border-radius: {{ block.settings.filter_button_radius }}px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+  }
+
+  .dinger-product-grid-pagination-btn-{{ ai_gen_id }}:hover:not(:disabled) {
+    background-color: {{ block.settings.filter_button_hover_bg }};
+    color: {{ block.settings.filter_button_hover_text }};
+  }
+
+  .dinger-product-grid-pagination-btn-{{ ai_gen_id }}:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .dinger-product-grid-pagination-info-{{ ai_gen_id }} {
+    font-size: 14px;
+    color: {{ block.settings.description_color }};
+  }
+
+  @media screen and (max-width: 989px) {
+    .dinger-product-grid-main-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;
+    }
+
+    .dinger-product-grid-featured-{{ ai_gen_id }} {
+      min-height: 400px;
+    }
+
+    .dinger-product-grid-regular-{{ ai_gen_id }} {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .dinger-product-grid-regular-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;
+    }
+
+    .dinger-product-grid-filters-{{ ai_gen_id }} {
+      justify-content: center;
+    }
+
+    .dinger-product-grid-heading-{{ ai_gen_id }} {
+      font-size: {{ block.settings.heading_size | times: 0.8 }}px;
+    }
+  }
+{% endstyle %}
+
+<product-grid-filter-{{ ai_gen_id }} class="dinger-product-grid-section-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="dinger-product-grid-container-{{ ai_gen_id }}">
+    <div class="dinger-product-grid-header-{{ ai_gen_id }}">
+      {% if block.settings.heading != blank %}
+        <h2 class="dinger-product-grid-heading-{{ ai_gen_id }}">{{ block.settings.heading }}</h2>
+      {% endif %}
+
+      {% if block.settings.description != blank %}
+        <div class="dinger-product-grid-description-{{ ai_gen_id }}">{{ block.settings.description }}</div>
+      {% endif %}
+
+      <div class="dinger-product-grid-filters-{{ ai_gen_id }}">
+        <button
+          class="dinger-product-grid-filter-btn-{{ ai_gen_id }} active"
+          data-filter="all"
+        >
+          All Products
+        </button>
+        {% if block.settings.collection_1 != blank %}
+          <button
+            class="dinger-product-grid-filter-btn-{{ ai_gen_id }}"
+            data-filter="collection-1"
+          >
+            {{ block.settings.collection_1.title }}
+          </button>
+        {% endif %}
+        {% if block.settings.collection_2 != blank %}
+          <button
+            class="dinger-product-grid-filter-btn-{{ ai_gen_id }}"
+            data-filter="collection-2"
+          >
+            {{ block.settings.collection_2.title }}
+          </button>
+        {% endif %}
+        {% if block.settings.collection_3 != blank %}
+          <button
+            class="dinger-product-grid-filter-btn-{{ ai_gen_id }}"
+            data-filter="collection-3"
+          >
+            {{ block.settings.collection_3.title }}
+          </button>
+        {% endif %}
+        {% if block.settings.collection_4 != blank %}
+          <button
+            class="dinger-product-grid-filter-btn-{{ ai_gen_id }}"
+            data-filter="collection-4"
+          >
+            {{ block.settings.collection_4.title }}
+          </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dinger-product-grid-main-{{ ai_gen_id }}">
+      <div class="dinger-product-grid-featured-{{ ai_gen_id }}" data-featured-container>
+      </div>
+
+      <div class="dinger-product-grid-regular-{{ ai_gen_id }}" data-products-container>
+      </div>
+    </div>
+
+    <div class="dinger-product-grid-pagination-{{ ai_gen_id }}" data-pagination>
+      <button
+        class="dinger-product-grid-pagination-btn-{{ ai_gen_id }}"
+        data-prev-btn
+        disabled
+      >
+        Previous
+      </button>
+      <span class="dinger-product-grid-pagination-info-{{ ai_gen_id }}" data-page-info>
+        Page 1
+      </span>
+      <button
+        class="dinger-product-grid-pagination-btn-{{ ai_gen_id }}"
+        data-next-btn
+      >
+        Next
+      </button>
+    </div>
+
+    <div style="display: none;" data-products-data>
+      {% if block.settings.collection_1 != blank %}
+        <div 
+          data-collection="collection-1"
+          {% if block.settings.collection_1_featured_image %}
+            data-featured-image="{{ block.settings.collection_1_featured_image | image_url: width: 1200 }}"
+            data-featured-image-alt="{{ block.settings.collection_1_featured_title | default: block.settings.collection_1.title | escape }}"
+          {% endif %}
+          data-featured-title="{{ block.settings.collection_1_featured_title | default: block.settings.collection_1.title | escape }}"
+          data-featured-description="{{ block.settings.collection_1_featured_description | escape }}"
+        >
+          {% for product in block.settings.collection_1.products %}
+            <div
+              data-product-id="{{ product.id }}"
+              data-product-url="{{ product.url }}"
+              data-product-title="{{ product.title | escape }}"
+              data-product-price="{{ product.price | money }}"
+              {% if product.featured_image %}
+                data-product-image="{{ product.featured_image | image_url: width: 800 }}"
+                data-product-image-alt="{{ product.featured_image.alt | escape }}"
+              {% endif %}
+            ></div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if block.settings.collection_2 != blank %}
+        <div 
+          data-collection="collection-2"
+          {% if block.settings.collection_2_featured_image %}
+            data-featured-image="{{ block.settings.collection_2_featured_image | image_url: width: 1200 }}"
+            data-featured-image-alt="{{ block.settings.collection_2_featured_title | default: block.settings.collection_2.title | escape }}"
+          {% endif %}
+          data-featured-title="{{ block.settings.collection_2_featured_title | default: block.settings.collection_2.title | escape }}"
+          data-featured-description="{{ block.settings.collection_2_featured_description | escape }}"
+        >
+          {% for product in block.settings.collection_2.products %}
+            <div
+              data-product-id="{{ product.id }}"
+              data-product-url="{{ product.url }}"
+              data-product-title="{{ product.title | escape }}"
+              data-product-price="{{ product.price | money }}"
+              {% if product.featured_image %}
+                data-product-image="{{ product.featured_image | image_url: width: 800 }}"
+                data-product-image-alt="{{ product.featured_image.alt | escape }}"
+              {% endif %}
+            ></div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if block.settings.collection_3 != blank %}
+        <div 
+          data-collection="collection-3"
+          {% if block.settings.collection_3_featured_image %}
+            data-featured-image="{{ block.settings.collection_3_featured_image | image_url: width: 1200 }}"
+            data-featured-image-alt="{{ block.settings.collection_3_featured_title | default: block.settings.collection_3.title | escape }}"
+          {% endif %}
+          data-featured-title="{{ block.settings.collection_3_featured_title | default: block.settings.collection_3.title | escape }}"
+          data-featured-description="{{ block.settings.collection_3_featured_description | escape }}"
+        >
+          {% for product in block.settings.collection_3.products %}
+            <div
+              data-product-id="{{ product.id }}"
+              data-product-url="{{ product.url }}"
+              data-product-title="{{ product.title | escape }}"
+              data-product-price="{{ product.price | money }}"
+              {% if product.featured_image %}
+                data-product-image="{{ product.featured_image | image_url: width: 800 }}"
+                data-product-image-alt="{{ product.featured_image.alt | escape }}"
+              {% endif %}
+            ></div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if block.settings.collection_4 != blank %}
+        <div 
+          data-collection="collection-4"
+          {% if block.settings.collection_4_featured_image %}
+            data-featured-image="{{ block.settings.collection_4_featured_image | image_url: width: 1200 }}"
+            data-featured-image-alt="{{ block.settings.collection_4_featured_title | default: block.settings.collection_4.title | escape }}"
+          {% endif %}
+          data-featured-title="{{ block.settings.collection_4_featured_title | default: block.settings.collection_4.title | escape }}"
+          data-featured-description="{{ block.settings.collection_4_featured_description | escape }}"
+        >
+          {% for product in block.settings.collection_4.products %}
+            <div
+              data-product-id="{{ product.id }}"
+              data-product-url="{{ product.url }}"
+              data-product-title="{{ product.title | escape }}"
+              data-product-price="{{ product.price | money }}"
+              {% if product.featured_image %}
+                data-product-image="{{ product.featured_image | image_url: width: 800 }}"
+                data-product-image-alt="{{ product.featured_image.alt | escape }}"
+              {% endif %}
+            ></div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</product-grid-filter-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class ProductGridFilter{{ai_gen_id}} extends HTMLElement {
+      constructor() {
+        super();
+        this.currentPage = 1;
+        this.productsPerPage = 7;
+        this.currentFilter = 'all';
+        this.allProducts = [];
+      }
+
+      connectedCallback() {
+        this.filterButtons = this.querySelectorAll('.dinger-product-grid-filter-btn-{{ ai_gen_id }}');
+        this.featuredContainer = this.querySelector('[data-featured-container]');
+        this.productsContainer = this.querySelector('[data-products-container]');
+        this.prevBtn = this.querySelector('[data-prev-btn]');
+        this.nextBtn = this.querySelector('[data-next-btn]');
+        this.pageInfo = this.querySelector('[data-page-info]');
+        this.productsData = this.querySelector('[data-products-data]');
+
+        this.loadProductsData();
+        this.setupEventListeners();
+        this.renderProducts();
+      }
+
+      loadProductsData() {
+        const collections = this.productsData.querySelectorAll('[data-collection]');
+        this.allProducts = [];
+        this.collectionFeaturedData = {};
+
+        collections.forEach((collection) => {
+          const collectionName = collection.getAttribute('data-collection');
+          const products = collection.querySelectorAll('[data-product-id]');
+
+          // Store featured image data for each collection
+          this.collectionFeaturedData[collectionName] = {
+            image: collection.getAttribute('data-featured-image'),
+            imageAlt: collection.getAttribute('data-featured-image-alt'),
+            title: collection.getAttribute('data-featured-title'),
+            description: collection.getAttribute('data-featured-description')
+          };
+
+          products.forEach((productEl) => {
+            this.allProducts.push({
+              id: productEl.getAttribute('data-product-id'),
+              url: productEl.getAttribute('data-product-url'),
+              title: productEl.getAttribute('data-product-title'),
+              price: productEl.getAttribute('data-product-price'),
+              image: productEl.getAttribute('data-product-image'),
+              imageAlt: productEl.getAttribute('data-product-image-alt'),
+              collection: collectionName
+            });
+          });
+        });
+      }
+
+      setupEventListeners() {
+        this.filterButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const filter = button.getAttribute('data-filter');
+            this.currentFilter = filter;
+            this.currentPage = 1;
+            this.updateActiveButton(button);
+            this.renderProducts();
+          });
+        });
+
+        this.prevBtn.addEventListener('click', () => {
+          if (this.currentPage > 1) {
+            this.currentPage--;
+            this.renderProducts();
+            this.scrollToTop();
+          }
+        });
+
+        this.nextBtn.addEventListener('click', () => {
+          const filteredProducts = this.getFilteredProducts();
+          const totalPages = Math.ceil(filteredProducts.length / this.productsPerPage);
+          if (this.currentPage < totalPages) {
+            this.currentPage++;
+            this.renderProducts();
+            this.scrollToTop();
+          }
+        });
+      }
+
+      getFilteredProducts() {
+        if (this.currentFilter === 'all') {
+          return this.allProducts;
+        }
+        return this.allProducts.filter(product => product.collection === this.currentFilter);
+      }
+
+      renderProducts() {
+        const filteredProducts = this.getFilteredProducts();
+        const startIndex = (this.currentPage - 1) * this.productsPerPage;
+        const endIndex = startIndex + this.productsPerPage;
+        const pageProducts = filteredProducts.slice(startIndex, endIndex);
+
+        if (pageProducts.length === 0) {
+          this.featuredContainer.innerHTML = `
+            <div class="dinger-product-grid-featured-placeholder-{{ ai_gen_id }}">
+              {{ 'product-1' | placeholder_svg_tag }}
+            </div>
+          `;
+          this.productsContainer.innerHTML = `
+            <div class="dinger-product-grid-empty-state-{{ ai_gen_id }}">
+              No products found
+            </div>
+          `;
+          this.updatePagination(0, 0);
+          return;
+        }
+
+        // Get featured data for current filter
+        const featuredData = this.currentFilter === 'all' 
+          ? this.collectionFeaturedData[pageProducts[0].collection]
+          : this.collectionFeaturedData[this.currentFilter];
+
+        this.featuredContainer.innerHTML = this.renderFeaturedSection(featuredData, pageProducts[0]);
+
+        const regularProducts = pageProducts.slice(1, 7);
+        this.productsContainer.innerHTML = regularProducts.map(product => 
+          this.renderRegularProduct(product)
+        ).join('');
+
+        this.updatePagination(filteredProducts.length, this.currentPage);
+      }
+
+      renderFeaturedSection(featuredData, firstProduct) {
+        const displayImage = featuredData?.image || firstProduct.image;
+        const displayTitle = featuredData?.title || firstProduct.title;
+        const displayDescription = featuredData?.description || firstProduct.price;
+        const displayAlt = featuredData?.imageAlt || firstProduct.imageAlt || displayTitle;
+
+        if (displayImage) {
+          return `
+            <div class="dinger-product-grid-featured-link-{{ ai_gen_id }}">
+              <img
+                src="${displayImage}"
+                alt="${displayAlt}"
+                class="dinger-product-grid-featured-image-{{ ai_gen_id }}"
+                loading="lazy"
+                width="1200"
+                height="1200"
+              >
+              <div class="dinger-product-grid-featured-info-{{ ai_gen_id }}">
+                <h3 class="dinger-product-grid-featured-title-{{ ai_gen_id }}">${displayTitle}</h3>
+                ${displayDescription ? `<div class="dinger-product-grid-featured-price-{{ ai_gen_id }}">${displayDescription}</div>` : ''}
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="dinger-product-grid-featured-link-{{ ai_gen_id }}">
+              <div class="dinger-product-grid-featured-placeholder-{{ ai_gen_id }}">
+                {{ 'product-1' | placeholder_svg_tag }}
+              </div>
+              <div class="dinger-product-grid-featured-info-{{ ai_gen_id }}">
+                <h3 class="dinger-product-grid-featured-title-{{ ai_gen_id }}">${displayTitle}</h3>
+                ${displayDescription ? `<div class="dinger-product-grid-featured-price-{{ ai_gen_id }}">${displayDescription}</div>` : ''}
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      renderRegularProduct(product) {
+        const imageHtml = product.image
+          ? `<img
+              src="${product.image.replace('width=800', 'width=400')}"
+              alt="${product.imageAlt || product.title}"
+              class="dinger-product-grid-card-image-{{ ai_gen_id }}"
+              loading="lazy"
+              width="400"
+              height="400"
+            >`
+          : `<div class="dinger-product-grid-card-placeholder-{{ ai_gen_id }}">
+              {{ 'product-1' | placeholder_svg_tag }}
+            </div>`;
+
+        return `
+          <a href="${product.url}" class="dinger-product-grid-card-{{ ai_gen_id }}">
+            <div class="dinger-product-grid-card-image-wrapper-{{ ai_gen_id }}">
+              ${imageHtml}
+            </div>
+            <div class="dinger-product-grid-card-info-{{ ai_gen_id }}">
+              <h3 class="dinger-product-grid-card-title-{{ ai_gen_id }}">${product.title}</h3>
+              <div class="dinger-product-grid-card-price-{{ ai_gen_id }}">${product.price}</div>
+            </div>
+          </a>
+        `;
+      }
+
+      updatePagination(totalProducts, currentPage) {
+        const totalPages = Math.ceil(totalProducts / this.productsPerPage);
+
+        this.prevBtn.disabled = currentPage <= 1;
+        this.nextBtn.disabled = currentPage >= totalPages || totalPages === 0;
+
+        if (totalPages === 0) {
+          this.pageInfo.textContent = 'No products';
+        } else {
+          this.pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        }
+      }
+
+      updateActiveButton(activeButton) {
+        this.filterButtons.forEach((button) => {
+          button.classList.remove('active');
+        });
+        activeButton.classList.add('active');
+      }
+
+      scrollToTop() {
+        this.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    customElements.define('product-grid-filter-{{ ai_gen_id }}', ProductGridFilter{{ai_gen_id}});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Product grid with filters",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Featured Products"
+    },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Discover our curated collection of premium products"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Collections"
+    },
+    {
+      "type": "collection",
+      "id": "collection_1",
+      "label": "Collection 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_1_featured_image",
+      "label": "Collection 1 - Featured image",
+      "info": "Custom image for featured section (40% area). If not set, first product image will be used."
+    },
+    {
+      "type": "text",
+      "id": "collection_1_featured_title",
+      "label": "Collection 1 - Featured title",
+      "info": "Optional custom title. Defaults to collection name."
+    },
+    {
+      "type": "text",
+      "id": "collection_1_featured_description",
+      "label": "Collection 1 - Featured description",
+      "info": "Optional description text."
+    },
+    {
+      "type": "collection",
+      "id": "collection_2",
+      "label": "Collection 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_2_featured_image",
+      "label": "Collection 2 - Featured image",
+      "info": "Custom image for featured section (40% area). If not set, first product image will be used."
+    },
+    {
+      "type": "text",
+      "id": "collection_2_featured_title",
+      "label": "Collection 2 - Featured title",
+      "info": "Optional custom title. Defaults to collection name."
+    },
+    {
+      "type": "text",
+      "id": "collection_2_featured_description",
+      "label": "Collection 2 - Featured description",
+      "info": "Optional description text."
+    },
+    {
+      "type": "collection",
+      "id": "collection_3",
+      "label": "Collection 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_3_featured_image",
+      "label": "Collection 3 - Featured image",
+      "info": "Custom image for featured section (40% area). If not set, first product image will be used."
+    },
+    {
+      "type": "text",
+      "id": "collection_3_featured_title",
+      "label": "Collection 3 - Featured title",
+      "info": "Optional custom title. Defaults to collection name."
+    },
+    {
+      "type": "text",
+      "id": "collection_3_featured_description",
+      "label": "Collection 3 - Featured description",
+      "info": "Optional description text."
+    },
+    {
+      "type": "collection",
+      "id": "collection_4",
+      "label": "Collection 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "collection_4_featured_image",
+      "label": "Collection 4 - Featured image",
+      "info": "Custom image for featured section (40% area). If not set, first product image will be used."
+    },
+    {
+      "type": "text",
+      "id": "collection_4_featured_title",
+      "label": "Collection 4 - Featured title",
+      "info": "Optional custom title. Defaults to collection name."
+    },
+    {
+      "type": "text",
+      "id": "collection_4_featured_description",
+      "label": "Collection 4 - Featured description",
+      "info": "Optional description text."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "container_width",
+      "min": 1000,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "label": "Container width",
+      "default": 1380
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Grid gap",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "section_padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 60
+    },
+    {
+      "type": "range",
+      "id": "section_padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 60
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "description_color",
+      "label": "Description",
+      "default": "#666666"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_text_color",
+      "label": "Card text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "card_price_color",
+      "label": "Card price",
+      "default": "#121212"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 20,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Description size",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "Filter buttons"
+    },
+    {
+      "type": "color",
+      "id": "filter_button_bg",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "filter_button_text",
+      "label": "Text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "filter_button_border",
+      "label": "Border",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "color",
+      "id": "filter_button_hover_bg",
+      "label": "Hover background",
+      "default": "#f5f5f5"
+    },
+    {
+      "type": "color",
+      "id": "filter_button_hover_text",
+      "label": "Hover text",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "filter_button_active_bg",
+      "label": "Active background",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "filter_button_active_text",
+      "label": "Active text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "filter_button_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 4
+    },
+    {
+      "type": "header",
+      "content": "Product cards"
+    },
+    {
+      "type": "range",
+      "id": "product_card_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product grid with filters"
+    }
+  ]
+}
+{% endschema %}
