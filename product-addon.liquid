@@ -1,0 +1,608 @@
+{% comment %}
+  Product Addon Section
+  File: sections/product-addon.liquid
+{% endcomment %}
+
+<div class="product-addon-section" data-section-id="{{ section.id }}">
+  {% comment %} Heaters {% endcomment %}
+  {% if product.metafields.custom.bundled_heaters %}
+    <div class="addon-group">
+      <h3 class="addon-group-title">{{ section.settings.heater_heading }}</h3>
+      
+      <div class="addon-options">
+        {% for heater_product in product.metafields.custom.bundled_heaters.value %}
+          <div class="addon-option" 
+               data-addon-type="heater"
+               data-product-id="{{ heater_product.id }}"
+               data-variant-id="{{ heater_product.selected_or_first_available_variant.id }}"
+               data-product-title="{{ heater_product.title | escape }}"
+               data-product-price="{{ heater_product.price | money }}"
+               data-product-price-raw="{{ heater_product.price }}">
+            
+            <div class="addon-checkbox">
+              <span class="checkmark">✓</span>
+            </div>
+            
+            <div class="addon-content">
+              {% if heater_product.featured_image %}
+                <img src="{{ heater_product.featured_image | img_url: '120x120' }}" 
+                     alt="{{ heater_product.title }}"
+                     loading="lazy">
+              {% endif %}
+            </div>
+            
+            <div class="addon-tooltip">
+              <strong>{{ heater_product.title }}</strong>
+              <span class="tooltip-price">{{ heater_product.price | money }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  {% comment %} Unique Accessories {% endcomment %}
+  {% if product.metafields.custom.bundled_addons %}
+    <div class="addon-group">
+      <h3 class="addon-group-title">{{ section.settings.accessory_heading }}</h3>
+      
+      <div class="addon-options">
+        {% comment %} NO Thanks Option {% endcomment %}
+        <div class="addon-option no-thanks-option selected" data-addon-type="accessory">
+          <div class="addon-checkbox">
+            <span class="checkmark">✓</span>
+          </div>
+          <div class="addon-content">
+            <span class="addon-label">NO<br>Thanks</span>
+          </div>
+        </div>
+        
+        {% for accessory_product in product.metafields.custom.bundled_addons.value %}
+          <div class="addon-option" 
+               data-addon-type="accessory"
+               data-product-id="{{ accessory_product.id }}"
+               data-variant-id="{{ accessory_product.selected_or_first_available_variant.id }}"
+               data-product-title="{{ accessory_product.title | escape }}"
+               data-product-price="{{ accessory_product.price | money }}"
+               data-product-price-raw="{{ accessory_product.price }}">
+            
+            <div class="addon-checkbox">
+              <span class="checkmark">✓</span>
+            </div>
+            
+            <div class="addon-content">
+              {% if accessory_product.featured_image %}
+                <img src="{{ accessory_product.featured_image | img_url: '120x120' }}" 
+                     alt="{{ accessory_product.title }}"
+                     loading="lazy">
+              {% endif %}
+            </div>
+            
+            <div class="addon-tooltip">
+              <strong>{{ accessory_product.title }}</strong>
+              <span class="tooltip-price">{{ accessory_product.price | money }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+
+</div>
+
+<!-- Total Price Calculator -->
+<div class="addon-total-calculator" id="addonTotalCalculator" style="display: none;">
+  <div class="addon-total-content">
+    <span class="addon-total-label">Total Add-ons:</span>
+    <span class="addon-total-price" id="addonTotalPrice">$0.00</span>
+  </div>
+</div>
+
+<style>
+.product-addon-section {
+  margin: 40px 0;
+  padding: 0 20px;
+}
+
+.addon-group {
+  margin-bottom: 50px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.addon-group:last-child {
+  border-bottom: none;
+}
+
+.addon-group-title {
+  font-weight: 700;
+  color:rgb(0, 0, 0);
+  margin-bottom: 20px;
+  text-transform: capitalize;
+}
+
+.addon-options {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.addon-option {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  border: 1px solid rgb(90, 90, 90);
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.addon-option:hover {
+  border-color: #4CAF50;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.addon-option.selected {
+  border-color: #4CAF50;
+  border-width: 3px;
+  background: #f0f9f0;
+}
+
+.addon-checkbox {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #d4d4d4;
+  border-radius: 50%;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 2;
+}
+
+.addon-option:hover .addon-checkbox {
+  border-color: #4CAF50;
+}
+
+.addon-option.selected .addon-checkbox {
+  background: #4CAF50;
+  border-color: #4CAF50;
+}
+
+.addon-checkbox .checkmark {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.addon-option.selected .addon-checkbox .checkmark {
+  opacity: 1;
+}
+
+.addon-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.addon-content img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.addon-label {
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+  color: #333;
+}
+
+.no-thanks-option {
+  background: #f5f5f5;
+}
+
+.no-thanks-option.selected {
+  background: #e8f5e9;
+}
+
+/* Tooltip Styles */
+.addon-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  min-width: 300px;
+  text-align: center;
+  overflow-wrap: break-word; /* For modern browsers */
+  word-wrap: break-word;
+}
+
+.addon-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+}
+
+.addon-tooltip strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.tooltip-price {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #4CAF50;
+}
+
+.addon-option:hover .addon-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(-5px);
+}
+
+.no-thanks-option .addon-tooltip {
+  display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .addon-option {
+    width: 110px;
+    height: 110px;
+  }
+  
+  .addon-group-title {
+    {% comment %} font-size: 22px; {% endcomment %}
+  }
+  
+  .addon-tooltip {
+    min-width: 150px;
+    padding: 10px 12px;
+  }
+}
+
+/* Total Calculator Styles */
+.addon-total-calculator {
+  margin: 30px 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.addon-total-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.addon-total-label {
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.addon-total-price {
+  font-size: 28px;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 768px) {
+  .addon-total-calculator {
+    margin: 20px 10px;
+    padding: 15px;
+  }
+  
+  .addon-total-label {
+    font-size: 16px;
+  }
+  
+  .addon-total-price {
+    font-size: 24px;
+  }
+}
+</style>
+
+<script>
+(function() {
+  const section = document.querySelector('.product-addon-section');
+  if (!section) return;
+
+  const selectedAddons = new Map(); // Track selected addons: variantId -> { price, title, type }
+  const totalCalculator = document.getElementById('addonTotalCalculator');
+  const totalPriceEl = document.getElementById('addonTotalPrice');
+
+  // Update total price display
+  function updateTotalPrice() {
+    let total = 0;
+    selectedAddons.forEach(addon => {
+      total += parseFloat(addon.price) || 0;
+    });
+
+    if (selectedAddons.size > 0) {
+      totalCalculator.style.display = 'block';
+      totalPriceEl.textContent = formatMoney(total);
+    } else {
+      totalCalculator.style.display = 'none';
+    }
+  }
+
+  // Format money (assumes cents)
+  function formatMoney(cents) {
+    const dollars = cents / 100;
+    return '$' + dollars.toFixed(2);
+  }
+
+  // Handle addon clicks
+  section.addEventListener('click', function(e) {
+    const addonOption = e.target.closest('.addon-option');
+    if (!addonOption) return;
+
+    const addonType = addonOption.dataset.addonType;
+    const variantId = addonOption.dataset.variantId;
+    const isNoThanks = addonOption.classList.contains('no-thanks-option');
+
+    // Get all options of the same type
+    const sameTypeOptions = section.querySelectorAll(`[data-addon-type="${addonType}"]`);
+
+    // For heaters: single selection with deselection capability
+    if (addonType === 'heater') {
+      if (addonOption.classList.contains('selected')) {
+        // Deselect the heater
+        addonOption.classList.remove('selected');
+        removeFromCart(variantId, addonType);
+        selectedAddons.delete(variantId);
+        updateTotalPrice();
+        return;
+      } else {
+        // Deselect all other heaters first
+        sameTypeOptions.forEach(opt => {
+          if (opt.classList.contains('selected')) {
+            const prevVariantId = opt.dataset.variantId;
+            opt.classList.remove('selected');
+            removeFromCart(prevVariantId, addonType);
+            selectedAddons.delete(prevVariantId);
+          }
+        });
+        
+        // Select the clicked heater
+        addonOption.classList.add('selected');
+        addToCart(variantId, addonOption, addonType);
+        selectedAddons.set(variantId, {
+          price: addonOption.dataset.productPriceRaw,
+          title: addonOption.dataset.productTitle,
+          type: addonType
+        });
+        updateTotalPrice();
+        return;
+      }
+    }
+
+    // For accessories: multiple selection with toggle behavior
+    if (isNoThanks) {
+      // If "No Thanks" is clicked, deselect all accessories and remove from cart
+      sameTypeOptions.forEach(opt => {
+        if (opt.classList.contains('selected') && !opt.classList.contains('no-thanks-option')) {
+          const prevVariantId = opt.dataset.variantId;
+          removeFromCart(prevVariantId, addonType);
+          selectedAddons.delete(prevVariantId);
+        }
+        opt.classList.remove('selected');
+      });
+      addonOption.classList.add('selected');
+      updateTotalPrice();
+      return;
+    }
+
+    // If an accessory is clicked, deselect "No Thanks"
+    const noThanksOption = Array.from(sameTypeOptions).find(opt => opt.classList.contains('no-thanks-option'));
+    if (noThanksOption) {
+      noThanksOption.classList.remove('selected');
+    }
+
+    // Toggle the clicked accessory
+    if (addonOption.classList.contains('selected')) {
+      // Deselect
+      addonOption.classList.remove('selected');
+      removeFromCart(variantId, addonType);
+      selectedAddons.delete(variantId);
+      updateTotalPrice();
+      
+      // If no accessories are selected, select "No Thanks"
+      const anySelected = Array.from(sameTypeOptions).some(opt => 
+        opt.classList.contains('selected') && !opt.classList.contains('no-thanks-option')
+      );
+      if (!anySelected && noThanksOption) {
+        noThanksOption.classList.add('selected');
+      }
+    } else {
+      // Select
+      addonOption.classList.add('selected');
+      addToCart(variantId, addonOption, addonType);
+      selectedAddons.set(variantId, {
+        price: addonOption.dataset.productPriceRaw,
+        title: addonOption.dataset.productTitle,
+        type: addonType
+      });
+      updateTotalPrice();
+    }
+  });
+
+  // Add to cart function
+  function addToCart(variantId, addonElement, addonType) {
+    const productTitle = addonElement.dataset.productTitle;
+    
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        items: [{
+          id: variantId,
+          quantity: 1,
+          properties: {
+            '_addon_type': addonType,
+            '_is_addon': 'true'
+          }
+        }]
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Added to cart:', productTitle);
+      selectedAddons.set(addonType, data.items[0].key);
+      
+      // Update cart UI (trigger cart drawer if your theme has one)
+      if (typeof window.theme !== 'undefined' && window.theme.cart) {
+        window.theme.cart.getCart();
+      }
+      
+      // Dispatch custom event for cart update
+      document.dispatchEvent(new CustomEvent('cart:updated'));
+    })
+    .catch(error => {
+      console.error('Error adding to cart:', error);
+      alert('Failed to add item to cart. Please try again.');
+    });
+  }
+
+  // Remove from cart function
+  function removeFromCart(variantId, addonType) {
+    // First, get the cart to find the line item
+    fetch('/cart.js')
+      .then(response => response.json())
+      .then(cart => {
+        // Find the item in cart
+        const item = cart.items.find(item => 
+          item.variant_id == variantId && 
+          item.properties && 
+          item.properties._addon_type === addonType
+        );
+
+        if (item) {
+          // Update quantity to 0 to remove
+          return fetch('/cart/change.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: item.key,
+              quantity: 0
+            })
+          });
+        }
+      })
+      .then(response => {
+        if (response) {
+          return response.json();
+        }
+      })
+      .then(data => {
+        if (data) {
+          console.log('Removed from cart');
+          selectedAddons.delete(addonType);
+          
+          // Update cart UI
+          if (typeof window.theme !== 'undefined' && window.theme.cart) {
+            window.theme.cart.getCart();
+          }
+          
+          document.dispatchEvent(new CustomEvent('cart:updated'));
+        }
+      })
+      .catch(error => {
+        console.error('Error removing from cart:', error);
+      });
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Product Addon",
+  "settings": [
+    {
+      "type": "text",
+      "id": "upgrade_heading",
+      "label": "Upgrade Option Heading",
+      "default": "Upgrade Option"
+    },
+    {
+      "type": "text",
+      "id": "heater_heading",
+      "label": "Heaters Heading",
+      "default": "Heaters"
+    },
+    {
+      "type": "text",
+      "id": "accessory_heading",
+      "label": "Accessories Heading",
+      "default": "Unique Accessories"
+    },
+    {
+      "type": "text",
+      "id": "therapy_heading",
+      "label": "Therapy Heading",
+      "default": "Hot & Cold Therapy"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Addon"
+    }
+  ]
+}
+{% endschema %}

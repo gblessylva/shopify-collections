@@ -1,0 +1,337 @@
+{% comment %}
+  Renders an improved product media gallery with large main image and thumbnail navigation
+  
+  Accepts:
+  - product: {Object} Product liquid object
+  - variant_images: {Array} Product images associated with a variant
+  - limit: {Number} (optional) When passed, limits the number of media items to render
+
+  Usage:
+  {% render 'product-media-gallery' %}
+{% endcomment %}
+
+{%- liquid
+  assign media_count = product.media.size
+  assign media_width = 1.0
+  assign current_media = product.selected_or_first_available_variant.featured_media | default: product.media[0]
+-%}
+
+<style>
+  .custom-media-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .custom-media-gallery__main {
+    width: 100%;
+    position: relative;
+    background: var(--color-background);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .custom-media-gallery__main-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    cursor: zoom-in;
+    transition: opacity 0.3s ease;
+  }
+
+  .custom-media-gallery__main-image:hover {
+    opacity: 0.95;
+  }
+
+  .custom-media-gallery__thumbnails-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  .custom-media-gallery__thumbnails-container {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .custom-media-gallery__thumbnails {
+    display: flex;
+    gap: 0.75rem;
+    transition: transform 0.3s ease;
+  }
+
+  .custom-media-gallery__thumbnail {
+    flex: 0 0 calc(20% - 0.6rem);
+    min-width: calc(20% - 0.6rem);
+    position: relative;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    background: var(--color-background);
+  }
+
+  .custom-media-gallery__thumbnail:hover {
+    border-color: rgba(var(--color-foreground), 0.3);
+    transform: translateY(-2px);
+  }
+
+  .custom-media-gallery__thumbnail.active {
+    border-color: rgb(var(--color-foreground));
+  }
+
+  .custom-media-gallery__thumbnail img {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+
+  .custom-media-gallery__nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(var(--color-foreground), 0.9);
+    color: rgb(var(--color-background));
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  .custom-media-gallery__nav-button:hover {
+    background: rgb(var(--color-foreground));
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  .custom-media-gallery__nav-button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .custom-media-gallery__nav-button--prev {
+    left: -18px;
+  }
+
+  .custom-media-gallery__nav-button--next {
+    right: -18px;
+  }
+
+  .custom-media-gallery__nav-button svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  .custom-media-gallery__badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(var(--color-foreground), 0.8);
+    color: rgb(var(--color-background));
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .custom-media-gallery__thumbnail {
+      flex: 0 0 calc(25% - 0.56rem);
+      min-width: calc(25% - 0.56rem);
+    }
+  }
+</style>
+
+<div class="custom-media-gallery" id="MediaGallery-{{ section.id }}">
+  <!-- Main Large Image -->
+  <div class="custom-media-gallery__main">
+    <img 
+      id="MainImage-{{ section.id }}"
+      class="custom-media-gallery__main-image"
+      src="{{ current_media | image_url: width: 1200 }}"
+      alt="{{ current_media.alt | escape }}"
+      width="1200"
+      height="1200"
+      loading="eager"
+    >
+  </div>
+
+  <!-- Thumbnail Navigation (Max 5 visible with arrows) -->
+  {%- if media_count > 1 -%}
+    <div class="custom-media-gallery__thumbnails-wrapper">
+      <button 
+        type="button"
+        class="custom-media-gallery__nav-button custom-media-gallery__nav-button--prev"
+        id="ThumbPrev-{{ section.id }}"
+        aria-label="Previous thumbnails"
+      >
+        <svg viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 5L5 1L1 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+
+      <div class="custom-media-gallery__thumbnails-container" id="ThumbsContainer-{{ section.id }}">
+        <div class="custom-media-gallery__thumbnails" id="Thumbnails-{{ section.id }}">
+          {%- for media in product.media -%}
+            <div 
+              class="custom-media-gallery__thumbnail {% if forloop.first %}active{% endif %}"
+              data-media-id="{{ media.id }}"
+              data-index="{{ forloop.index0 }}"
+            >
+              {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
+                <span class="custom-media-gallery__badge">
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+                    <path d="M3 2L10 6L3 10V2Z"/>
+                  </svg>
+                  VIDEO
+                </span>
+              {%- elsif media.media_type == 'model' -%}
+                <span class="custom-media-gallery__badge">3D</span>
+              {%- endif -%}
+              <img 
+                src="{{ media | image_url: width: 200 }}"
+                alt="{{ media.alt | escape }}"
+                loading="lazy"
+              >
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+
+      <button 
+        type="button"
+        class="custom-media-gallery__nav-button custom-media-gallery__nav-button--next"
+        id="ThumbNext-{{ section.id }}"
+        aria-label="Next thumbnails"
+      >
+        <svg viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: rotate(180deg)">
+          <path d="M9 5L5 1L1 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  {%- endif -%}
+</div>
+
+<script>
+(function() {
+  const sectionId = '{{ section.id }}';
+  const mainImage = document.getElementById('MainImage-' + sectionId);
+  const thumbnailsContainer = document.getElementById('Thumbnails-' + sectionId);
+  const prevButton = document.getElementById('ThumbPrev-' + sectionId);
+  const nextButton = document.getElementById('ThumbNext-' + sectionId);
+  const thumbnails = thumbnailsContainer ? thumbnailsContainer.querySelectorAll('.custom-media-gallery__thumbnail') : [];
+  
+  let currentIndex = 0;
+  let startIndex = 0;
+  const visibleCount = 5;
+  const totalCount = thumbnails.length;
+
+  // Media data
+  const mediaData = [
+    {%- for media in product.media -%}
+      {
+        id: '{{ media.id }}',
+        src: '{{ media | image_url: width: 1200 }}',
+        alt: '{{ media.alt | escape }}',
+        type: '{{ media.media_type }}'
+      }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ];
+
+  // Change main image
+  function changeMainImage(index) {
+    if (!mainImage || !mediaData[index]) return;
+    
+    mainImage.style.opacity = '0.7';
+    setTimeout(() => {
+      mainImage.src = mediaData[index].src;
+      mainImage.alt = mediaData[index].alt;
+      mainImage.style.opacity = '1';
+    }, 150);
+
+    // Update active thumbnail
+    thumbnails.forEach((thumb, idx) => {
+      thumb.classList.toggle('active', idx === index);
+    });
+    
+    currentIndex = index;
+  }
+
+  // Update thumbnail position
+  function updateThumbnailPosition() {
+    if (!thumbnailsContainer) return;
+    
+    const thumbWidth = thumbnails[0] ? thumbnails[0].offsetWidth : 0;
+    const gap = 12; // 0.75rem
+    const offset = -startIndex * (thumbWidth + gap);
+    thumbnailsContainer.style.transform = `translateX(${offset}px)`;
+
+    // Update button states
+    if (prevButton) prevButton.disabled = startIndex === 0;
+    if (nextButton) nextButton.disabled = startIndex >= totalCount - visibleCount;
+  }
+
+  // Thumbnail click handlers
+  thumbnails.forEach((thumbnail, index) => {
+    thumbnail.addEventListener('click', () => {
+      changeMainImage(index);
+    });
+  });
+
+  // Navigation button handlers
+  if (prevButton) {
+    prevButton.addEventListener('click', () => {
+      if (startIndex > 0) {
+        startIndex--;
+        updateThumbnailPosition();
+      }
+    });
+  }
+
+  if (nextButton) {
+    nextButton.addEventListener('click', () => {
+      if (startIndex < totalCount - visibleCount) {
+        startIndex++;
+        updateThumbnailPosition();
+      }
+    });
+  }
+
+  // Initialize
+  updateThumbnailPosition();
+
+  // Handle variant changes
+  if (window.variantChangeCallbacks) {
+    window.variantChangeCallbacks.push((variant) => {
+      if (variant && variant.featured_media) {
+        const mediaIndex = mediaData.findIndex(m => m.id === variant.featured_media.id.toString());
+        if (mediaIndex !== -1) {
+          changeMainImage(mediaIndex);
+          
+          // Scroll thumbnail into view if needed
+          if (mediaIndex < startIndex) {
+            startIndex = mediaIndex;
+            updateThumbnailPosition();
+          } else if (mediaIndex >= startIndex + visibleCount) {
+            startIndex = mediaIndex - visibleCount + 1;
+            updateThumbnailPosition();
+          }
+        }
+      }
+    });
+  } else {
+    window.variantChangeCallbacks = [];
+  }
+})();
+</script>

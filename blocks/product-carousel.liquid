@@ -1,0 +1,654 @@
+{% assign tamuz_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .tamuz-product-carousel-{{ tamuz_gen_id }} {
+    width: 100%;
+    overflow: hidden;
+    padding: 40px 0;
+    position: relative;
+  }
+
+  .tamuz-product-carousel-conttamuzner-{{ tamuz_gen_id }} {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    padding-bottom:60px;
+  }
+
+  .tamuz-product-carousel-arrow-{{ tamuz_gen_id }} {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: {{ block.settings.arrow_background }};
+    border: 1px solid {{ block.settings.arrow_border_color }};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: {{ block.settings.arrow_color }};
+    z-index: 20;
+  }
+
+  .tamuz-product-carousel-arrow-{{ tamuz_gen_id }}:hover {
+    background-color: {{ block.settings.arrow_hover_background }};
+    color: {{ block.settings.arrow_hover_color }};
+  }
+
+  .tamuz-product-carousel-arrow-{{ tamuz_gen_id }}:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .tamuz-product-carousel-arrow-prev-{{ tamuz_gen_id }} {
+    left: 20px;
+  }
+
+  .tamuz-product-carousel-arrow-next-{{ tamuz_gen_id }} {
+    right: 20px;
+  }
+
+  .tamuz-product-carousel-track-{{ tamuz_gen_id }} {
+    display: flex;
+    gap: 5px;
+    cursor: grab;
+    user-select: none;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .tamuz-product-carousel-track-{{ tamuz_gen_id }}::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tamuz-product-carousel-track-{{ tamuz_gen_id }}.dragging {
+    cursor: grabbing;
+    scroll-behavior: auto;
+  }
+
+  .tamuz-product-carousel-item-{{ tamuz_gen_id }} {
+    flex: 0 0 calc(16.6667% - 4.1667px);
+    min-width: calc(16.6667% - 4.1667px);
+    pointer-events: none;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tamuz-product-carousel-card-{{ tamuz_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    pointer-events: auto;
+    background-color: {{ block.settings.card_background }};
+    border: {{ block.settings.card_border_width }}px solid {{ block.settings.card_border_color }};
+    border-radius: {{ block.settings.card_border_radius }}px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .tamuz-product-carousel-card-{{ tamuz_gen_id }}:hover {
+    transform: translateY(-4px);
+    box-shadow: {{ block.settings.card_shadow_x }}px {{ block.settings.card_shadow_y }}px {{ block.settings.card_shadow_blur }}px {{ block.settings.card_shadow_color }};
+  }
+
+  .tamuz-product-carousel-image-wrapper-{{ tamuz_gen_id }} {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background-color: #f4f4f4;
+  }
+
+  .tamuz-product-carousel-image-{{ tamuz_gen_id }} {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  .tamuz-product-carousel-card-{{ tamuz_gen_id }}:hover .tamuz-product-carousel-image-{{ tamuz_gen_id }} {
+    transform: scale(1.05);
+  }
+
+  .tamuz-product-carousel-image-placeholder-{{ tamuz_gen_id }} {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tamuz-product-carousel-image-placeholder-{{ tamuz_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .tamuz-product-carousel-info-{{ tamuz_gen_id }} {
+    padding: 16px;
+    text-align: {{ block.settings.text_alignment }};
+  }
+
+  .tamuz-product-carousel-collection-{{ tamuz_gen_id }} {
+    font-size: {{ block.settings.collection_font_size }}px;
+    color: {{ block.settings.collection_color }};
+    margin: 0 0 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .tamuz-product-carousel-title-{{ tamuz_gen_id }} {
+    font-size: {{ block.settings.title_font_size }}px;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: {{ block.settings.title_color }};
+    text-decoration: none;
+    display: block;
+  }
+
+  .tamuz-product-carousel-title-{{ tamuz_gen_id }}:hover {
+    opacity: 0.8;
+  }
+
+  .tamuz-product-carousel-price-{{ tamuz_gen_id }} {
+    font-size: {{ block.settings.price_font_size }}px;
+    color: {{ block.settings.price_color }};
+  }
+
+  .tamuz-product-carousel-empty-{{ tamuz_gen_id }} {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    font-size: 16px;
+  }
+
+  @media screen and (max-width: 989px) {
+    .tamuz-product-carousel-item-{{ tamuz_gen_id }} {
+      flex: 0 0 calc(33.333% - 3.33px);
+      min-width: calc(33.333% - 3.33px);
+    }
+
+    .tamuz-product-carousel-arrow-{{ tamuz_gen_id }} {
+      width: 40px;
+      height: 40px;
+    }
+
+    .tamuz-product-carousel-arrow-prev-{{ tamuz_gen_id }} {
+      left: 10px;
+    }
+
+    .tamuz-product-carousel-arrow-next-{{ tamuz_gen_id }} {
+      right: 10px;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .tamuz-product-carousel-item-{{ tamuz_gen_id }} {
+      flex: 0 0 calc(50% - 2.5px);
+      min-width: calc(50% - 2.5px);
+    }
+
+    .tamuz-product-carousel-image-wrapper-{{ tamuz_gen_id }} {
+      height: 180px;
+    }
+
+    .tamuz-product-carousel-arrow-{{ tamuz_gen_id }} {
+      display: none;
+    }
+  }
+{% endstyle %}
+
+<product-carousel-{{ tamuz_gen_id }}
+  class="tamuz-product-carousel-{{ tamuz_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  <div class="tamuz-product-carousel-conttamuzner-{{ tamuz_gen_id }}">
+    {% if block.settings.collection != blank %}
+      {% assign start_index = block.settings.start_from | minus: 1 %}
+      {% assign products_to_display = block.settings.products_count %}
+      {% assign collection_products = block.settings.collection.products %}
+      {% assign total_products = collection_products.size %}
+
+      {% if start_index < total_products %}
+        <button
+          class="tamuz-product-carousel-arrow-{{ tamuz_gen_id }} tamuz-product-carousel-arrow-prev-{{ tamuz_gen_id }}"
+          aria-label="Previous products"
+          data-arrow-prev
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <button
+          class="tamuz-product-carousel-arrow-{{ tamuz_gen_id }} tamuz-product-carousel-arrow-next-{{ tamuz_gen_id }}"
+          aria-label="Next products"
+          data-arrow-next
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <div
+          class="tamuz-product-carousel-track-{{ tamuz_gen_id }}"
+          data-carousel-track
+        >
+          {% for product in collection_products limit: products_to_display offset: start_index %}
+            <div class="tamuz-product-carousel-item-{{ tamuz_gen_id }}">
+              <div class="tamuz-product-carousel-card-{{ tamuz_gen_id }}">
+                <a
+                  href="{{ product.url }}"
+                  class="tamuz-product-carousel-image-wrapper-{{ tamuz_gen_id }}"
+                >
+                  {% if product.featured_image %}
+                    <img
+                      src="{{ product.featured_image | image_url: width: 400 }}"
+                      alt="{{ product.featured_image.alt | escape }}"
+                      class="tamuz-product-carousel-image-{{ tamuz_gen_id }}"
+                      loading="lazy"
+                      width="400"
+                      height="400"
+                    >
+                  {% else %}
+                    <div class="tamuz-product-carousel-image-placeholder-{{ tamuz_gen_id }}">
+                      {{ 'product-1' | placeholder_svg_tag }}
+                    </div>
+                  {% endif %}
+                </a>
+                <div class="tamuz-product-carousel-info-{{ tamuz_gen_id }}">
+                  {% comment %} {% if product.collections.size > 0 %}
+                    <div class="tamuz-product-carousel-collection-{{ tamuz_gen_id }}">
+                      {{ product.collections[2].title }}
+                    </div>
+                  {% endif %} {% endcomment %}
+                  <a
+                    href="{{ product.url }}"
+                    class="tamuz-product-carousel-title-{{ tamuz_gen_id }}"
+                  >
+                    {{ product.title }}
+                  </a>
+                  <div class="tamuz-product-carousel-price-{{ tamuz_gen_id }}">
+                    {{ product.price | money }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="tamuz-product-carousel-empty-{{ tamuz_gen_id }}">
+          The start position is beyond the avtamuzlable products in this collection.
+        </div>
+      {% endif %}
+    {% else %}
+      <div class="tamuz-product-carousel-empty-{{ tamuz_gen_id }}">Next, select a collection to display products</div>
+    {% endif %}
+  </div>
+</product-carousel-{{ tamuz_gen_id }}>
+
+<script>
+  (function() {
+    class ProductCarousel{{ tamuz_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.track = null;
+        this.prevButton = null;
+        this.nextButton = null;
+        this.isDragging = false;
+        this.startX = 0;
+        this.scrollLeft = 0;
+      }
+
+      connectedCallback() {
+        this.track = this.querySelector('[data-carousel-track]');
+        this.prevButton = this.querySelector('[data-arrow-prev]');
+        this.nextButton = this.querySelector('[data-arrow-next]');
+
+        if (!this.track) return;
+
+        this.setupDragScroll();
+        this.setupArrows();
+      }
+
+      setupDragScroll() {
+        this.track.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        this.track.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        this.track.addEventListener('mouseup', this.handleMouseUp.bind(this));
+        this.track.addEventListener('mouseleave', this.handleMouseUp.bind(this));
+
+        this.track.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: true });
+        this.track.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+        this.track.addEventListener('touchend', this.handleTouchEnd.bind(this));
+
+        // Add mouse wheel scroll support
+        this.track.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
+      }
+
+      setupArrows() {
+        if (!this.prevButton || !this.nextButton) return;
+
+        this.prevButton.addEventListener('click', () => {
+          const scrollAmount = this.track.offsetWidth * 0.8;
+          this.track.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        });
+
+        this.nextButton.addEventListener('click', () => {
+          const scrollAmount = this.track.offsetWidth * 0.8;
+          this.track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        });
+
+        this.track.addEventListener('scroll', this.updateArrowStates.bind(this));
+        this.updateArrowStates();
+      }
+
+      updateArrowStates() {
+        if (!this.prevButton || !this.nextButton) return;
+
+        const isAtStart = this.track.scrollLeft <= 0;
+        const isAtEnd = this.track.scrollLeft + this.track.offsetWidth >= this.track.scrollWidth - 1;
+
+        this.prevButton.disabled = isAtStart;
+        this.nextButton.disabled = isAtEnd;
+      }
+
+      handleMouseDown(e) {
+        this.isDragging = true;
+        this.track.classList.add('dragging');
+        this.startX = e.pageX - this.track.offsetLeft;
+        this.scrollLeft = this.track.scrollLeft;
+      }
+
+      handleMouseMove(e) {
+        if (!this.isDragging) return;
+        e.preventDefault();
+        const x = e.pageX - this.track.offsetLeft;
+        const walk = (x - this.startX) * 2;
+        this.track.scrollLeft = this.scrollLeft - walk;
+      }
+
+      handleMouseUp() {
+        this.isDragging = false;
+        this.track.classList.remove('dragging');
+      }
+
+      handleTouchStart(e) {
+        this.isDragging = true;
+        this.startX = e.touches[0].pageX - this.track.offsetLeft;
+        this.scrollLeft = this.track.scrollLeft;
+      }
+
+      handleTouchMove(e) {
+        if (!this.isDragging) return;
+        const x = e.touches[0].pageX - this.track.offsetLeft;
+        const walk = (x - this.startX) * 2;
+        this.track.scrollLeft = this.scrollLeft - walk;
+      }
+
+      handleTouchEnd() {
+        this.isDragging = false;
+      }
+
+      handleWheel(e) {
+        // Prevent default vertical scroll
+        e.preventDefault();
+        
+        // Convert vertical scroll to horizontal scroll
+        const delta = e.deltaY || e.deltaX;
+        this.track.scrollLeft += delta;
+        
+        // Update arrow states after scroll
+        setTimeout(() => this.updateArrowStates(), 50);
+      }
+    }
+
+    customElements.define('product-carousel-{{ tamuz_gen_id }}', ProductCarousel{{ tamuz_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Product carousel",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Collection"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "start_from",
+      "min": 1,
+      "max": 50,
+      "step": 1,
+      "label": "Start from product",
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "products_count",
+      "min": 4,
+      "max": 50,
+      "step": 1,
+      "label": "Number of products",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Card style"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "card_border_width",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "label": "Border width",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "card_border_color",
+      "label": "Border color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "range",
+      "id": "card_border_radius",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 8
+    },
+    {
+      "type": "header",
+      "content": "Card hover shadow"
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_x",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Horizontal offset",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_y",
+      "min": 0,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Vertical offset",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "card_shadow_blur",
+      "min": 0,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Blur",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "card_shadow_color",
+      "label": "Shadow color",
+      "default": "#00000026"
+    },
+    {
+      "type": "header",
+      "content": "Product info"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "collection_font_size",
+      "min": 10,
+      "max": 16,
+      "step": 1,
+      "unit": "px",
+      "label": "Collection font size",
+      "default": 12
+    },
+    {
+      "type": "color",
+      "id": "collection_color",
+      "label": "Collection color",
+      "default": "#999999"
+    },
+    {
+      "type": "range",
+      "id": "title_font_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Title font size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "price_font_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Price font size",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "price_color",
+      "label": "Price color",
+      "default": "#666666"
+    },
+    {
+      "type": "header",
+      "content": "Navigation arrows"
+    },
+    {
+      "type": "color",
+      "id": "arrow_background",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "arrow_border_color",
+      "label": "Border color",
+      "default": "#e0e0e0"
+    },
+    {
+      "type": "color",
+      "id": "arrow_color",
+      "label": "Icon color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "arrow_hover_background",
+      "label": "Hover background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "arrow_hover_color",
+      "label": "Hover icon color",
+      "default": "#ffffff"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product carousel"
+    }
+  ]
+}
+{% endschema %}

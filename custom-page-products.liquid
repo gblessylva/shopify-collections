@@ -1,0 +1,301 @@
+{% comment %}
+  Custom Page Products Display
+  Works on ANY page type (pages, custom templates, etc.)
+  Uses page metafield OR collection to display products with randomization
+{% endcomment %}
+
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .section-{{ section.id }}-padding {
+    padding-top: {{ section.settings.padding_top | times: 0.75 | round: 0 }}px;
+    padding-bottom: {{ section.settings.padding_bottom | times: 0.75 | round: 0 }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .section-{{ section.id }}-padding {
+      padding-top: {{ section.settings.padding_top }}px;
+      padding-bottom: {{ section.settings.padding_bottom }}px;
+    }
+  }
+
+  .custom-page-products {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .custom-page-products.loaded {
+    opacity: 1;
+  }
+{%- endstyle -%}
+
+<div class="color-{{ section.settings.color_scheme }} gradient">
+  <div class="custom-page-products page-width section-{{ section.id }}-padding isolate" 
+       id="customProducts-{{ section.id }}">
+    
+    {% assign products_to_display = null %}
+    
+    {% comment %} Method 1: Page metafield (if on a page) {% endcomment %}
+    {% if page and page.metafields.custom.featured_products.value.size > 0 %}
+      {% assign products_to_display = page.metafields.custom.featured_products.value %}
+    {% endif %}
+    
+    {% comment %} Method 2: Collection fallback {% endcomment %}
+    {% if products_to_display == null and section.settings.collection != blank %}
+      {% assign selected_collection = collections[section.settings.collection] %}
+      {% assign products_to_display = selected_collection.products %}
+    {% endif %}
+    
+    {% if products_to_display.size > 0 %}
+      <h2 class="section-heading inline-richtext {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+      
+      <ul class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
+          role="list"
+          data-product-grid>
+        
+        {% comment %} Render ALL products, hide them initially for JS randomization {% endcomment %}
+        {% for product in products_to_display %}
+          <li class="grid__item" data-product-item style="display: none;">
+            {% render 'card-product',
+              card_product: product,
+              media_aspect_ratio: section.settings.image_ratio,
+              image_shape: section.settings.image_shape,
+              show_secondary_image: section.settings.show_secondary_image,
+              show_vendor: section.settings.show_vendor,
+              show_rating: section.settings.show_rating
+            %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="page-width section-{{ section.id }}-padding">
+        <p>{{ section.settings.empty_message }}</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function() {
+  const section = document.getElementById('customProducts-{{ section.id }}');
+  if (!section) return;
+
+  const grid = section.querySelector('[data-product-grid]');
+  if (!grid) {
+    section.classList.add('loaded');
+    return;
+  }
+
+  const items = Array.from(grid.querySelectorAll('[data-product-item]'));
+  const limit = {{ section.settings.products_to_show }};
+  const enableRandom = {{ section.settings.enable_randomization }};
+  
+  if (items.length === 0) {
+    section.classList.add('loaded');
+    return;
+  }
+
+  // Fisher-Yates shuffle algorithm
+  function shuffle(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
+  // Either shuffle or keep original order
+  const displayItems = enableRandom ? shuffle(items) : items;
+  const toShow = Math.min(limit, displayItems.length);
+  
+  // Show limited items
+  displayItems.slice(0, toShow).forEach(item => {
+    item.style.display = '';
+  });
+  
+  // Remove excess items from DOM
+  displayItems.slice(toShow).forEach(item => {
+    item.remove();
+  });
+
+  // Show section with fade-in
+  section.classList.add('loaded');
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Custom Page Products",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Displays products from page metafield 'custom.featured_products' OR from a selected collection. Works on any page type."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "default": "Featured Products",
+      "label": "Section Heading"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "options": [
+        {"value": "h2", "label": "Small"},
+        {"value": "h1", "label": "Medium"},
+        {"value": "h0", "label": "Large"},
+        {"value": "hxl", "label": "Extra Large"}
+      ],
+      "default": "h1",
+      "label": "Heading size"
+    },
+    {
+      "type": "header",
+      "content": "Product Source"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Fallback Collection",
+      "info": "Used if page metafield is empty. Select your 'record-with-my-samples' collection."
+    },
+    {
+      "type": "header",
+      "content": "Display Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_randomization",
+      "default": true,
+      "label": "Randomize products on each page load",
+      "info": "Shows different products each time. Disable to show in order."
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 20,
+      "step": 1,
+      "default": 8,
+      "label": "Maximum products to show"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 6,
+      "step": 1,
+      "default": 4,
+      "label": "Desktop columns"
+    },
+    {
+      "type": "text",
+      "id": "empty_message",
+      "default": "No products to display.",
+      "label": "Empty state message"
+    },
+    {
+      "type": "header",
+      "content": "Product Card Settings"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "options": [
+        {"value": "adapt", "label": "Adapt to image"},
+        {"value": "portrait", "label": "Portrait"},
+        {"value": "square", "label": "Square"}
+      ],
+      "default": "adapt",
+      "label": "Image ratio"
+    },
+    {
+      "type": "select",
+      "id": "image_shape",
+      "options": [
+        {"value": "default", "label": "Default"},
+        {"value": "arch", "label": "Arch"},
+        {"value": "blob", "label": "Blob"},
+        {"value": "chevronleft", "label": "Chevron left"},
+        {"value": "chevronright", "label": "Chevron right"},
+        {"value": "diamond", "label": "Diamond"},
+        {"value": "parallelogram", "label": "Parallelogram"},
+        {"value": "round", "label": "Round"}
+      ],
+      "default": "default",
+      "label": "Image shape"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secondary_image",
+      "default": false,
+      "label": "Show secondary image on hover"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "default": false,
+      "label": "Show vendor"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "default": false,
+      "label": "Show product rating"
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "header",
+      "content": "Mobile Settings"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "default": "2",
+      "label": "Mobile columns",
+      "options": [
+        {"value": "1", "label": "1 column"},
+        {"value": "2", "label": "2 columns"}
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Section Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 36
+    }
+  ],
+  "presets": [
+    {
+      "name": "Custom Page Products"
+    }
+  ]
+}
+{% endschema %}
