@@ -1,0 +1,787 @@
+{% doc %}
+  @prompt
+    Create a three layout sections. The first column is a carousel of images that can either scroll from up to down or down to up. The images have equal width, but should have varying  heights to give the impression of masonry. The center section is a heading, and a button that link to a product collection. The right section/column has same features as left/first but images sources should be different. user can add up to 10 images on each carousel column
+{% enddoc %}
+{% assign ai_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .ai-masonry-carousel-{{ ai_gen_id }} {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr 1fr;
+    gap: 40px;
+    align-items: center;
+    padding: 60px 20px;
+    background-color: {{ block.settings.background_color }};
+    overflow: hidden;
+  }
+
+  .ai-masonry-carousel__column-{{ ai_gen_id }} {
+    position: relative;
+    height: {{ block.settings.carousel_height }}px;
+    overflow: hidden;
+  }
+
+  .ai-masonry-carousel__track-{{ ai_gen_id }} {
+    display: flex;
+    flex-direction: column;
+    gap: {{ block.settings.image_gap }}px;
+    will-change: transform;
+  }
+
+  .ai-masonry-carousel__track-{{ ai_gen_id }}--up {
+    animation: ai-masonry-scroll-up-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+  }
+
+  .ai-masonry-carousel__track-{{ ai_gen_id }}--down {
+    animation: ai-masonry-scroll-down-{{ ai_gen_id }} {{ block.settings.scroll_speed }}s linear infinite;
+  }
+
+  .ai-masonry-carousel__column-{{ ai_gen_id }}:hover .ai-masonry-carousel__track-{{ ai_gen_id }} {
+    animation-play-state: paused;
+  }
+
+  .ai-masonry-carousel__image-wrapper-{{ ai_gen_id }} {
+    width: 100%;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    overflow: hidden;
+  }
+
+  .ai-masonry-carousel__image-{{ ai_gen_id }} {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+  }
+
+  .ai-masonry-carousel__placeholder-{{ ai_gen_id }} {
+    width: 100%;
+    background-color: #f4f4f4;
+    border-radius: {{ block.settings.image_border_radius }}px;
+    overflow: hidden;
+  }
+
+  .ai-masonry-carousel__placeholder-{{ ai_gen_id }} svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .ai-masonry-carousel__center-{{ ai_gen_id }} {
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .ai-masonry-carousel__heading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.heading_size }}px;
+    color: {{ block.settings.heading_color }};
+    margin: 0 0 20px;
+    line-height: 1.2;
+  }
+
+  .ai-masonry-carousel__subheading-{{ ai_gen_id }} {
+    font-size: {{ block.settings.subheading_size }}px;
+    color: {{ block.settings.subheading_color }};
+    margin: 0 0 30px;
+    line-height: 1.5;
+  }
+
+  .ai-masonry-carousel__button-{{ ai_gen_id }} {
+    display: inline-block;
+    padding: 15px 40px;
+    background-color: {{ block.settings.button_bg_color }};
+    color: {{ block.settings.button_text_color }};
+    text-decoration: none;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    font-size: {{ block.settings.button_font_size }}px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+  }
+
+  .ai-masonry-carousel__button-{{ ai_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_bg_color }};
+    color: {{ block.settings.button_hover_text_color }};
+  }
+
+  @keyframes ai-masonry-scroll-up-{{ ai_gen_id }} {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  @keyframes ai-masonry-scroll-down-{{ ai_gen_id }} {
+    0% {
+      transform: translateY(-50%);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  @media screen and (max-width: 989px) {
+    .ai-masonry-carousel-{{ ai_gen_id }} {
+      grid-template-columns: 1fr;
+      gap: 30px;
+    }
+
+    .ai-masonry-carousel__column-{{ ai_gen_id }} {
+      height: 400px;
+    }
+
+    .ai-masonry-carousel__center-{{ ai_gen_id }} {
+      order: -1;
+      padding: 20px;
+    }
+
+    .ai-masonry-carousel__heading-{{ ai_gen_id }} {
+      font-size: calc({{ block.settings.heading_size }}px * 0.7);
+    }
+
+    .ai-masonry-carousel__subheading-{{ ai_gen_id }} {
+      font-size: calc({{ block.settings.subheading_size }}px * 0.9);
+    }
+  }
+{% endstyle %}
+
+<masonry-carousel-{{ ai_gen_id }} class="ai-masonry-carousel-{{ ai_gen_id }}" {{ block.shopify_attributes }}>
+  <div class="ai-masonry-carousel__column-{{ ai_gen_id }}">
+    <div class="ai-masonry-carousel__track-{{ ai_gen_id }} ai-masonry-carousel__track-{{ ai_gen_id }}--{{ block.settings.left_scroll_direction }}" data-column="left">
+      {% for i in (1..10) %}
+        {% assign image_key = 'left_image_' | append: i %}
+        {% assign height_key = 'left_height_' | append: i %}
+        {% assign image = block.settings[image_key] %}
+        {% assign height = block.settings[height_key] %}
+        
+        {% if image %}
+          <div class="ai-masonry-carousel__image-wrapper-{{ ai_gen_id }}">
+            <img
+              src="{{ image | image_url: width: 600 }}"
+              alt="{{ image.alt | escape }}"
+              width="600"
+              height="{{ height }}"
+              loading="lazy"
+              class="ai-masonry-carousel__image-{{ ai_gen_id }}"
+              style="height: {{ height }}px;"
+            >
+          </div>
+        {% endif %}
+      {% endfor %}
+      {% for i in (1..10) %}
+        {% assign image_key = 'left_image_' | append: i %}
+        {% assign height_key = 'left_height_' | append: i %}
+        {% assign image = block.settings[image_key] %}
+        {% assign height = block.settings[height_key] %}
+        
+        {% if image %}
+          <div class="ai-masonry-carousel__image-wrapper-{{ ai_gen_id }}">
+            <img
+              src="{{ image | image_url: width: 600 }}"
+              alt="{{ image.alt | escape }}"
+              width="600"
+              height="{{ height }}"
+              loading="lazy"
+              class="ai-masonry-carousel__image-{{ ai_gen_id }}"
+              style="height: {{ height }}px;"
+            >
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="ai-masonry-carousel__center-{{ ai_gen_id }}">
+    {% if block.settings.heading != blank %}
+      <h2 class="ai-masonry-carousel__heading-{{ ai_gen_id }}">{{ block.settings.heading }}</h2>
+    {% endif %}
+    
+    {% if block.settings.subheading != blank %}
+      <div class="ai-masonry-carousel__subheading-{{ ai_gen_id }}">{{ block.settings.subheading }}</div>
+    {% endif %}
+    
+    {% if block.settings.button_text != blank %}
+      <a href="{{ block.settings.button_link }}" class="ai-masonry-carousel__button-{{ ai_gen_id }}">
+        {{ block.settings.button_text }}
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="ai-masonry-carousel__column-{{ ai_gen_id }}">
+    <div class="ai-masonry-carousel__track-{{ ai_gen_id }} ai-masonry-carousel__track-{{ ai_gen_id }}--{{ block.settings.right_scroll_direction }}" data-column="right">
+      {% for i in (1..10) %}
+        {% assign image_key = 'right_image_' | append: i %}
+        {% assign height_key = 'right_height_' | append: i %}
+        {% assign image = block.settings[image_key] %}
+        {% assign height = block.settings[height_key] %}
+        
+        {% if image %}
+          <div class="ai-masonry-carousel__image-wrapper-{{ ai_gen_id }}">
+            <img
+              src="{{ image | image_url: width: 600 }}"
+              alt="{{ image.alt | escape }}"
+              width="600"
+              height="{{ height }}"
+              loading="lazy"
+              class="ai-masonry-carousel__image-{{ ai_gen_id }}"
+              style="height: {{ height }}px;"
+            >
+          </div>
+        {% endif %}
+      {% endfor %}
+      {% for i in (1..10) %}
+        {% assign image_key = 'right_image_' | append: i %}
+        {% assign height_key = 'right_height_' | append: i %}
+        {% assign image = block.settings[image_key] %}
+        {% assign height = block.settings[height_key] %}
+        
+        {% if image %}
+          <div class="ai-masonry-carousel__image-wrapper-{{ ai_gen_id }}">
+            <img
+              src="{{ image | image_url: width: 600 }}"
+              alt="{{ image.alt | escape }}"
+              width="600"
+              height="{{ height }}"
+              loading="lazy"
+              class="ai-masonry-carousel__image-{{ ai_gen_id }}"
+              style="height: {{ height }}px;"
+            >
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</masonry-carousel-{{ ai_gen_id }}>
+
+<script>
+  (function() {
+    class MasonryCarousel{{ ai_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+      }
+
+      connectedCallback() {
+        this.tracks = this.querySelectorAll('.ai-masonry-carousel__track-{{ ai_gen_id }}');
+        this.setupCarousels();
+      }
+
+      setupCarousels() {
+        this.tracks.forEach((track) => {
+          const images = track.querySelectorAll('.ai-masonry-carousel__image-wrapper-{{ ai_gen_id }}');
+          if (images.length === 0) {
+            track.style.animation = 'none';
+          }
+        });
+      }
+    }
+
+    customElements.define('masonry-carousel-{{ ai_gen_id }}', MasonryCarousel{{ ai_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Masonry carousel",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "carousel_height",
+      "min": 400,
+      "max": 800,
+      "step": 50,
+      "unit": "px",
+      "label": "Carousel height",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "image_gap",
+      "min": 8,
+      "max": 40,
+      "step": 4,
+      "unit": "px",
+      "label": "Image gap",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "image_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Image border radius",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "scroll_speed",
+      "min": 10,
+      "max": 60,
+      "step": 5,
+      "unit": "s",
+      "label": "Scroll speed",
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Center content"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Discover Our Collection"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "min": 24,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Heading size",
+      "default": 48
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading color",
+      "default": "#121212"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Explore our curated selection"
+    },
+    {
+      "type": "range",
+      "id": "subheading_size",
+      "min": 12,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "label": "Subheading size",
+      "default": 18
+    },
+    {
+      "type": "color",
+      "id": "subheading_color",
+      "label": "Subheading color",
+      "default": "#666666"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "range",
+      "id": "button_font_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Button font size",
+      "default": 16
+    },
+    {
+      "type": "color",
+      "id": "button_bg_color",
+      "label": "Button background",
+      "default": "#121212"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_bg_color",
+      "label": "Button hover background",
+      "default": "#e91e63"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Button hover text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Button border radius",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Left carousel"
+    },
+    {
+      "type": "select",
+      "id": "left_scroll_direction",
+      "label": "Scroll direction",
+      "options": [
+        {
+          "value": "up",
+          "label": "Up"
+        },
+        {
+          "value": "down",
+          "label": "Down"
+        }
+      ],
+      "default": "up"
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_1",
+      "label": "Image 1"
+    },
+    {
+      "type": "range",
+      "id": "left_height_1",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 1 height",
+      "default": 250
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_2",
+      "label": "Image 2"
+    },
+    {
+      "type": "range",
+      "id": "left_height_2",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 2 height",
+      "default": 300
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_3",
+      "label": "Image 3"
+    },
+    {
+      "type": "range",
+      "id": "left_height_3",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 3 height",
+      "default": 200
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_4",
+      "label": "Image 4"
+    },
+    {
+      "type": "range",
+      "id": "left_height_4",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 4 height",
+      "default": 280
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_5",
+      "label": "Image 5"
+    },
+    {
+      "type": "range",
+      "id": "left_height_5",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 5 height",
+      "default": 220
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_6",
+      "label": "Image 6"
+    },
+    {
+      "type": "range",
+      "id": "left_height_6",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 6 height",
+      "default": 260
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_7",
+      "label": "Image 7"
+    },
+    {
+      "type": "range",
+      "id": "left_height_7",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 7 height",
+      "default": 240
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_8",
+      "label": "Image 8"
+    },
+    {
+      "type": "range",
+      "id": "left_height_8",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 8 height",
+      "default": 290
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_9",
+      "label": "Image 9"
+    },
+    {
+      "type": "range",
+      "id": "left_height_9",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 9 height",
+      "default": 210
+    },
+    {
+      "type": "image_picker",
+      "id": "left_image_10",
+      "label": "Image 10"
+    },
+    {
+      "type": "range",
+      "id": "left_height_10",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 10 height",
+      "default": 270
+    },
+    {
+      "type": "header",
+      "content": "Right carousel"
+    },
+    {
+      "type": "select",
+      "id": "right_scroll_direction",
+      "label": "Scroll direction",
+      "options": [
+        {
+          "value": "up",
+          "label": "Up"
+        },
+        {
+          "value": "down",
+          "label": "Down"
+        }
+      ],
+      "default": "down"
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_1",
+      "label": "Image 1"
+    },
+    {
+      "type": "range",
+      "id": "right_height_1",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 1 height",
+      "default": 280
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_2",
+      "label": "Image 2"
+    },
+    {
+      "type": "range",
+      "id": "right_height_2",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 2 height",
+      "default": 230
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_3",
+      "label": "Image 3"
+    },
+    {
+      "type": "range",
+      "id": "right_height_3",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 3 height",
+      "default": 310
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_4",
+      "label": "Image 4"
+    },
+    {
+      "type": "range",
+      "id": "right_height_4",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 4 height",
+      "default": 200
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_5",
+      "label": "Image 5"
+    },
+    {
+      "type": "range",
+      "id": "right_height_5",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 5 height",
+      "default": 270
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_6",
+      "label": "Image 6"
+    },
+    {
+      "type": "range",
+      "id": "right_height_6",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 6 height",
+      "default": 240
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_7",
+      "label": "Image 7"
+    },
+    {
+      "type": "range",
+      "id": "right_height_7",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 7 height",
+      "default": 290
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_8",
+      "label": "Image 8"
+    },
+    {
+      "type": "range",
+      "id": "right_height_8",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 8 height",
+      "default": 220
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_9",
+      "label": "Image 9"
+    },
+    {
+      "type": "range",
+      "id": "right_height_9",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 9 height",
+      "default": 300
+    },
+    {
+      "type": "image_picker",
+      "id": "right_image_10",
+      "label": "Image 10"
+    },
+    {
+      "type": "range",
+      "id": "right_height_10",
+      "min": 150,
+      "max": 500,
+      "step": 10,
+      "unit": "px",
+      "label": "Image 10 height",
+      "default": 250
+    }
+  ],
+  "presets": [
+    {
+      "name": "Masonry carousel"
+    }
+  ]
+}
+{% endschema %}

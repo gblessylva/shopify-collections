@@ -1,7 +1,7 @@
 {% comment %}
-  Smart Product Recommendations
-  Works with metafield: product.metafields.custom.recommended_products (list of products)
-  Randomly selects from the list to show varied recommendations
+  Custom Page Products Display
+  Works on ANY page type (pages, custom templates, etc.)
+  Uses page metafield OR collection to display products with randomization
 {% endcomment %}
 
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
@@ -20,25 +20,44 @@
     }
   }
 
-  .smart-recommendations {
+  .custom-page-products {
     opacity: 0;
     transition: opacity 0.3s ease;
   }
 
-  .smart-recommendations.loaded {
+  .custom-page-products.loaded {
     opacity: 1;
   }
 {%- endstyle -%}
 
 <div class="color-{{ section.settings.color_scheme }} gradient">
-  <div class="smart-recommendations page-width section-{{ section.id }}-padding isolate" 
-       id="smartRecs-{{ section.id }}"
-       data-section-id="{{ section.id }}">
+  <div class="custom-page-products page-width section-{{ section.id }}-padding isolate" 
+       id="customProducts-{{ section.id }}">
     
-    {% comment %} Check for custom metafield first {% endcomment %}
-    {% if product.metafields.custom.recommended_products.value.size > 0 %}
+    {% assign products_to_display = null %}
+    {% assign collection_a_products = null %}
+    {% assign collection_b_products = null %}
+    
+    {% comment %} Method 1: Page metafield (highest priority) {% endcomment %}
+    {% if page and page.metafields.custom.featured_products.value.size > 0 %}
+      {% assign products_to_display = page.metafields.custom.featured_products.value %}
+    {% endif %}
+    
+    {% comment %} Method 2: Dual collection system {% endcomment %}
+    {% if products_to_display == null %}
+      {% if section.settings.collection_a != blank %}
+        {% assign collection_a = collections[section.settings.collection_a] %}
+        {% assign collection_a_products = collection_a.products %}
+      {% endif %}
       
-      <h2 class="related-products__heading inline-richtext {{ section.settings.heading_size }}">
+      {% if section.settings.collection_b != blank %}
+        {% assign collection_b = collections[section.settings.collection_b] %}
+        {% assign collection_b_products = collection_b.products %}
+      {% endif %}
+    {% endif %}
+    
+    {% if products_to_display.size > 0 %}
+      <h2 class="section-heading inline-richtext {{ section.settings.heading_size }}">
         {{ section.settings.heading }}
       </h2>
       
@@ -46,11 +65,11 @@
           role="list"
           data-product-grid>
         
-        {% comment %} Render ALL products from metafield, hide them initially {% endcomment %}
-        {% for recommended_product in product.metafields.custom.recommended_products.value %}
-          <li class="grid__item" data-product-item style="display: none;">
+        {% comment %} Render ALL products from metafield, hide them initially for JS randomization {% endcomment %}
+        {% for product in products_to_display %}
+          <li class="grid__item" data-product-item data-source="metafield" style="display: none;">
             {% render 'card-product',
-              card_product: recommended_product,
+              card_product: product,
               media_aspect_ratio: section.settings.image_ratio,
               image_shape: section.settings.image_shape,
               show_secondary_image: section.settings.show_secondary_image,
@@ -60,63 +79,79 @@
           </li>
         {% endfor %}
       </ul>
-
-    {% comment %} Fallback to Shopify's native recommendations {% endcomment %}
-    {% elsif section.settings.enable_fallback %}
       
-      <product-recommendations
-        class="related-products"
-        data-url="{{ routes.product_recommendations_url }}?limit={{ section.settings.products_to_show }}"
-        data-section-id="{{ section.id }}"
-        data-product-id="{{ product.id }}">
+    {% elsif collection_a_products != null or collection_b_products != null %}
+      <h2 class="section-heading inline-richtext {{ section.settings.heading_size }}">
+        {{ section.settings.heading }}
+      </h2>
+      
+      <ul class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
+          role="list"
+          data-product-grid
+          data-limit="{{ section.settings.products_to_show }}"
+          data-enable-random="{{ section.settings.enable_randomization }}">
         
-        {% if recommendations.performed and recommendations.products_count > 0 %}
-          <h2 class="related-products__heading inline-richtext {{ section.settings.heading_size }}">
-            {{ section.settings.fallback_heading }}
-          </h2>
-          <ul class="grid product-grid grid--{{ section.settings.columns_desktop }}-col-desktop grid--{{ section.settings.columns_mobile }}-col-tablet-down"
-              role="list">
-            {% for recommendation in recommendations.products %}
-              <li class="grid__item">
-                {% render 'card-product',
-                  card_product: recommendation,
-                  media_aspect_ratio: section.settings.image_ratio,
-                  image_shape: section.settings.image_shape,
-                  show_secondary_image: section.settings.show_secondary_image,
-                  show_vendor: section.settings.show_vendor,
-                  show_rating: section.settings.show_rating
-                %}
-              </li>
-            {% endfor %}
-          </ul>
+        {% comment %} Collection A: Get first 10 latest products (sorted by created_at desc) {% endcomment %}
+        {% if collection_a_products != null %}
+          {% for product in collection_a_products limit: 10 %}
+            <li class="grid__item" data-product-item data-source="collection-a" style="display: none;">
+              {% render 'card-product',
+                card_product: product,
+                media_aspect_ratio: section.settings.image_ratio,
+                image_shape: section.settings.image_shape,
+                show_secondary_image: section.settings.show_secondary_image,
+                show_vendor: section.settings.show_vendor,
+                show_rating: section.settings.show_rating
+              %}
+            </li>
+          {% endfor %}
         {% endif %}
-      </product-recommendations>
+        
+        {% comment %} Collection B: Get all products {% endcomment %}
+        {% if collection_b_products != null %}
+          {% for product in collection_b_products %}
+            <li class="grid__item" data-product-item data-source="collection-b" style="display: none;">
+              {% render 'card-product',
+                card_product: product,
+                media_aspect_ratio: section.settings.image_ratio,
+                image_shape: section.settings.image_shape,
+                show_secondary_image: section.settings.show_secondary_image,
+                show_vendor: section.settings.show_vendor,
+                show_rating: section.settings.show_rating
+              %}
+            </li>
+          {% endfor %}
+        {% endif %}
+      </ul>
       
+    {% else %}
+      <div class="page-width section-{{ section.id }}-padding">
+        <p>{{ section.settings.empty_message }}</p>
+      </div>
     {% endif %}
   </div>
 </div>
 
 <script>
 (function() {
-  const section = document.getElementById('smartRecs-{{ section.id }}');
+  const section = document.getElementById('customProducts-{{ section.id }}');
   if (!section) return;
 
   const grid = section.querySelector('[data-product-grid]');
   if (!grid) {
-    // No custom recommendations, show section immediately
     section.classList.add('loaded');
     return;
   }
 
-  const items = Array.from(grid.querySelectorAll('[data-product-item]'));
-  const limit = {{ section.settings.products_to_show }};
+  const limit = parseInt(grid.dataset.limit) || {{ section.settings.products_to_show }};
+  const enableRandom = grid.dataset.enableRandom === 'true';
   
-  if (items.length === 0) {
-    section.classList.add('loaded');
-    return;
-  }
-
-  // Fisher-Yates shuffle algorithm (more reliable than sort)
+  // Separate items by source
+  const metafieldItems = Array.from(grid.querySelectorAll('[data-source="metafield"]'));
+  const collectionAItems = Array.from(grid.querySelectorAll('[data-source="collection-a"]'));
+  const collectionBItems = Array.from(grid.querySelectorAll('[data-source="collection-b"]'));
+  
+  // Fisher-Yates shuffle algorithm
   function shuffle(array) {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -126,20 +161,69 @@
     return shuffled;
   }
 
-  // Shuffle and show limited items
-  const shuffled = shuffle(items);
-  const toShow = Math.min(limit, shuffled.length);
-  
-  shuffled.slice(0, toShow).forEach(item => {
-    item.style.display = '';
-  });
-  
-  // Remove excess items from DOM
-  shuffled.slice(toShow).forEach(item => {
-    item.remove();
-  });
+  // Handle metafield products (original logic)
+  if (metafieldItems.length > 0) {
+    const displayItems = enableRandom ? shuffle(metafieldItems) : metafieldItems;
+    const toShow = Math.min(limit, displayItems.length);
+    
+    displayItems.slice(0, toShow).forEach(item => {
+      item.style.display = '';
+    });
+    
+    displayItems.slice(toShow).forEach(item => {
+      item.remove();
+    });
+    
+    section.classList.add('loaded');
+    return;
+  }
 
-  // Show section with fade-in
+  // Handle dual collection logic
+  if (collectionAItems.length > 0 || collectionBItems.length > 0) {
+    // Calculate split: Collection A gets priority for odd numbers
+    const countA = Math.ceil(limit / 2);
+    const countB = limit - countA;
+    
+    let selectedFromA = [];
+    let selectedFromB = [];
+    
+    // Select from Collection A (randomize from first 10 latest)
+    if (collectionAItems.length > 0) {
+      const shuffledA = enableRandom ? shuffle(collectionAItems) : collectionAItems;
+      selectedFromA = shuffledA.slice(0, Math.min(countA, collectionAItems.length));
+    }
+    
+    // Select from Collection B
+    if (collectionBItems.length > 0) {
+      const shuffledB = enableRandom ? shuffle(collectionBItems) : collectionBItems;
+      const neededFromB = countB + Math.max(0, countA - selectedFromA.length); // Fallback if A insufficient
+      selectedFromB = shuffledB.slice(0, Math.min(neededFromB, collectionBItems.length));
+    }
+    
+    // Fallback: If B is insufficient, take more from A
+    if (selectedFromB.length < countB && collectionAItems.length > selectedFromA.length) {
+      const additionalNeeded = countB - selectedFromB.length;
+      const shuffledA = enableRandom ? shuffle(collectionAItems) : collectionAItems;
+      const available = shuffledA.filter(item => !selectedFromA.includes(item));
+      selectedFromA = selectedFromA.concat(available.slice(0, additionalNeeded));
+    }
+    
+    // Combine and display
+    const finalSelection = [...selectedFromA, ...selectedFromB];
+    
+    finalSelection.forEach(item => {
+      item.style.display = '';
+    });
+    
+    // Remove unselected items
+    const allItems = [...collectionAItems, ...collectionBItems];
+    allItems.forEach(item => {
+      if (!finalSelection.includes(item)) {
+        item.remove();
+      }
+    });
+  }
+
   section.classList.add('loaded');
 })();
 </script>
@@ -150,13 +234,13 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "Add products to the 'custom.recommended_products' metafield to show curated recommendations. Falls back to Shopify's algorithm if none are set."
+      "content": "Priority: 1) Page metafield 'custom.featured_products' 2) Dual collection system (A + B). Collection A pulls from latest 10 products."
     },
     {
-      "type": "inline_richtext",
+      "type": "text",
       "id": "heading",
-      "default": "Frequently Bought Together",
-      "label": "Heading"
+      "default": "Featured Products",
+      "label": "Section Heading"
     },
     {
       "type": "select",
@@ -171,39 +255,55 @@
       "label": "Heading size"
     },
     {
+      "type": "header",
+      "content": "Product Source - Dual Collections"
+    },
+    {
+      "type": "collection",
+      "id": "collection_a",
+      "label": "Collection A (Latest Products)",
+      "info": "Higher priority. Pulls from first 10 latest products."
+    },
+    {
+      "type": "collection",
+      "id": "collection_b",
+      "label": "Collection B (All Products)",
+      "info": "Secondary source. Pulls from all products."
+    },
+    {
+      "type": "header",
+      "content": "Display Settings"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_randomization",
+      "default": true,
+      "label": "Randomize products on each page load",
+      "info": "Randomizes within each collection separately before combining."
+    },
+    {
       "type": "range",
       "id": "products_to_show",
       "min": 2,
-      "max": 10,
+      "max": 20,
       "step": 1,
-      "default": 4,
-      "label": "Products to show"
+      "default": 8,
+      "label": "Maximum products to show"
     },
     {
       "type": "range",
       "id": "columns_desktop",
-      "min": 1,
+      "min": 2,
       "max": 6,
       "step": 1,
       "default": 4,
       "label": "Desktop columns"
     },
     {
-      "type": "header",
-      "content": "Fallback Settings"
-    },
-    {
-      "type": "checkbox",
-      "id": "enable_fallback",
-      "default": true,
-      "label": "Enable fallback to Shopify recommendations",
-      "info": "Shows Shopify's algorithmic recommendations if no custom products are set"
-    },
-    {
-      "type": "inline_richtext",
-      "id": "fallback_heading",
-      "default": "You May Also Like",
-      "label": "Fallback heading"
+      "type": "text",
+      "id": "empty_message",
+      "default": "No products to display.",
+      "label": "Empty state message"
     },
     {
       "type": "header",
