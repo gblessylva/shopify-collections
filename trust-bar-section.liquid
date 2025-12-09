@@ -1,0 +1,235 @@
+{% comment %}
+  Trust Bar Section
+  Full-width section with customizable icon + content blocks
+{% endcomment %}
+
+<section class="trust-bar-section" style="background-color: {{ section.settings.background_color }}; color: {{ section.settings.text_color }};">
+  <div class="trust-bar-wrapper page-width">
+    <div class="trust-bar-grid">
+      {%- for block in section.blocks -%}
+        <div class="trust-bar-item" {{ block.shopify_attributes }}>
+          {%- if block.settings.icon_svg != blank -%}
+            <span class="trust-bar-icon" style="color: {{ block.settings.icon_color }};">
+              {{ block.settings.icon_svg }}
+            </span>
+          {%- endif -%}
+          
+          <div class="trust-bar-content">
+            {%- if block.settings.title != blank -%}
+              <div class="trust-bar-title" style="color: {{ block.settings.title_color }};">
+                {{ block.settings.title }}
+              </div>
+            {%- endif -%}
+            
+            {%- if block.settings.description != blank -%}
+              <p class="trust-bar-description" style="color: {{ block.settings.description_color }};">
+                {{ block.settings.description }}
+              </p>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+<style>
+.trust-bar-section {
+  padding: 48px 0;
+  width: 100%;
+}
+
+.trust-bar-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.trust-bar-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+.trust-bar-item {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.trust-bar-icon {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.trust-bar-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.trust-bar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.trust-bar-title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.trust-bar-description {
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Tablet */
+@media screen and (max-width: 990px) {
+  .trust-bar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+  
+  .trust-bar-section {
+    padding: 40px 0;
+  }
+}
+
+/* Mobile */
+@media screen and (max-width: 749px) {
+  .trust-bar-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .trust-bar-section {
+    padding: 32px 0;
+  }
+  
+  .trust-bar-item {
+    gap: 12px;
+  }
+  
+  .trust-bar-icon {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .trust-bar-title {
+    font-size: 15px;
+  }
+  
+  .trust-bar-description {
+    font-size: 13px;
+  }
+}
+</style>
+
+{% schema %}
+{
+  "name": "Trust Bar",
+  "tag": "section",
+  "class": "section-trust-bar",
+  "settings": [
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background Color",
+      "default": "#f8f9fa"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Default Text Color",
+      "default": "#333333"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_item",
+      "name": "Trust Item",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "html",
+          "id": "icon_svg",
+          "label": "Icon SVG Code",
+          "info": "Paste your SVG code here"
+        },
+        {
+          "type": "color",
+          "id": "icon_color",
+          "label": "Icon Color",
+          "default": "#0066cc"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Trust Badge Title"
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Title Color",
+          "default": "#000000"
+        },
+        {
+          "type": "textarea",
+          "id": "description",
+          "label": "Description",
+          "default": "Add your trust badge description here."
+        },
+        {
+          "type": "color",
+          "id": "description_color",
+          "label": "Description Color",
+          "default": "#666666"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust Bar",
+      "blocks": [
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "America's Trusted Retailer",
+            "description": "As America's top rated sauna retailer, we're here to help guide you pre and post purchase."
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "Hassle Free Returns",
+            "description": "We want you to be completely satisfied with your purchase."
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "Fastest Delivery Guaranteed",
+            "description": "Due to our manufacturer direct partnerships, you won't find this product anywhere faster."
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "title": "Manufacturer's Warranty Included",
+            "description": "All of our products include the full manufacturer's warranty."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

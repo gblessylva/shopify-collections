@@ -1,0 +1,586 @@
+{% doc %}
+  @prompt
+    Create an expanding cards section. Here's what it does:
+    Key Features:
+    
+    6 Cards arranged vertically in a  column
+    Collapsed State: Shows only the vertical heading (rotated 90° reading bottom to top) and takes up minimal space
+    Expanded State: On hover, the card expands to 4x its size, rotates the heading back to horizontal, and reveals the CTA button with a smooth fade-in animation
+    Only One Expands: When you hover over a card, only that card expands while others compress proportionally
+    Each card has a beautiful background image with an overlay for text readability
+    Smooth cubic-bezier transitions for a premium feel, Modify. cards:
+    
+    Are arranged in 6 equal columns (not rows)
+    The heading text reads from bottom to top when collapsed (natural vertical reading direction)
+    When you hover on a card, it expands to the right while others compress
+    The heading rotates to horizontal and the CTA button appears, this is great. Inside the cards the heading is top and the button is bottom, no description. Each card links to a collection.  The texts read from bottom to top. the last hovered item reattamuzns its size., remove the animation when the card expands. On none hovered state, the heading starts from bottom.
+{% enddoc %}
+{% assign tamuz_gen_id = block.id | replace: '_', '' | downcase %}
+
+{% style %}
+  .tamuz-expanding-cards-{{ tamuz_gen_id }} {
+    display: flex;
+    flex-direction: row;
+    height: {{ block.settings.conttamuzner_height }}px;
+    width: 100%;
+    gap: {{ block.settings.card_gap }}px;
+    overflow: hidden;
+    padding: 80px 0;
+    
+  }
+
+  .tamuz-expanding-card-{{ tamuz_gen_id }} {
+    position: relative;
+    width: calc((100% - (5 * {{ block.settings.card_gap }}px)) / 6);
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: {{ block.settings.border_radius }}px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .tamuz-expanding-card-{{ tamuz_gen_id }}.expanded {
+    width: calc(4 * (100% - (5 * {{ block.settings.card_gap }}px)) / 15);
+  }
+
+  .tamuz-expanding-card-{{ tamuz_gen_id }}.compressed {
+    width: calc((100% - (5 * {{ block.settings.card_gap }}px)) / 7);
+  }
+
+  .tamuz-expanding-card-overlay-{{ tamuz_gen_id }} {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 0, 0, {{ block.settings.overlay_opacity }}) 0%,
+      rgba(0, 0, 0, {{ block.settings.overlay_opacity | times: 0.7 }}) 100%
+    );
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 20px;
+  }
+
+  .tamuz-expanding-card-{{ tamuz_gen_id }}.expanded .tamuz-expanding-card-overlay-{{ tamuz_gen_id }} {
+    justify-content: space-between;
+  }
+
+  .tamuz-expanding-card-title-{{ tamuz_gen_id }} {
+    color: {{ block.settings.text_color }};
+    font-size: {{ block.settings.title_size }}px;
+    font-weight: 600;
+    text-align: center;
+    margin: 0;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    white-space: nowrap;
+    max-width:300px;
+  }
+
+  .tamuz-expanding-card-{{ tamuz_gen_id }}.expanded .tamuz-expanding-card-title-{{ tamuz_gen_id }} {
+    writing-mode: horizontal-tb;
+    text-orientation: initial;
+    transform: rotate(0deg);
+    white-space: normal;
+  }
+
+   .tamuz-expanding-card-{{ tamuz_gen_id }}.expanded .tamuz-expanding-card-button-{{ tamuz_gen_id }} {
+   display:inline-flex;
+  }
+
+
+  .tamuz-expanding-card-button-{{ tamuz_gen_id }} {
+    background-color: {{ block.settings.button_bg_color }};
+    color: {{ block.settings.button_text_color }};
+    border: none;
+    padding: 12px 24px;
+    border-radius: {{ block.settings.button_border_radius }}px;
+    font-size: {{ block.settings.button_text_size }}px;
+    font-weight: 500;
+    text-decoration: none;
+    display: none;
+    opacity: 0;
+    cursor: pointer;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    white-space: nowrap;
+  }
+
+  .tamuz-expanding-card-{{ tamuz_gen_id }}.expanded .tamuz-expanding-card-button-{{ tamuz_gen_id }} {
+    opacity: 1;
+    writing-mode: horizontal-tb;
+    text-orientation: initial;
+    transform: rotate(0deg);
+    white-space: normal;
+  }
+
+  .tamuz-expanding-card-button-{{ tamuz_gen_id }}:hover {
+    background-color: {{ block.settings.button_hover_bg_color }};
+    color: {{ block.settings.button_hover_text_color }};
+  }
+
+  .tamuz-expanding-card-placeholder-{{ tamuz_gen_id }} {
+    background-color: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .tamuz-expanding-card-placeholder-{{ tamuz_gen_id }} svg {
+    width: 60px;
+    height: 60px;
+    opacity: 0.3;
+  }
+
+  .tamuz-expanding-card-empty-state-{{ tamuz_gen_id }} {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #666;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0.7;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: translateX(-50%) rotate(180deg);
+  }
+
+  @media screen and (max-width: 749px) {
+    .tamuz-expanding-cards-{{ tamuz_gen_id }} {
+      flex-direction: column;
+      height: {{ block.settings.conttamuzner_height | times: 1.2 }}px;
+    }
+
+    .tamuz-expanding-card-{{ tamuz_gen_id }} {
+      width: 100%;
+      height: calc(({{ block.settings.conttamuzner_height | times: 1.2 }}px - (5 * {{ block.settings.card_gap }}px)) / 6);
+    }
+
+    .tamuz-expanding-card-{{ tamuz_gen_id }}.expanded {
+      height: calc(4 * ({{ block.settings.conttamuzner_height | times: 1.2 }}px - (5 * {{ block.settings.card_gap }}px)) / 6);
+      width: 100%;
+    }
+
+    .tamuz-expanding-card-{{ tamuz_gen_id }}.compressed {
+      height: calc(({{ block.settings.conttamuzner_height | times: 1.2 }}px - (5 * {{ block.settings.card_gap }}px)) / 15);
+      width: 100%;
+    }
+
+    .tamuz-expanding-card-title-{{ tamuz_gen_id }} {
+      font-size: {{ block.settings.title_size | times: 0.9 }}px;
+    }
+
+    .tamuz-expanding-card-button-{{ tamuz_gen_id }} {
+      font-size: {{ block.settings.button_text_size | times: 0.9 }}px;
+      padding: 10px 20px;
+    }
+  }
+{% endstyle %}
+
+<expanding-cards-{{ tamuz_gen_id }}
+  class="tamuz-expanding-cards-{{ tamuz_gen_id }}"
+  {{ block.shopify_attributes }}
+>
+  {% for i in (1..6) %}
+    {% liquid
+      assign card_image_key = 'card_' | append: i | append: '_image'
+      assign card_title_key = 'card_' | append: i | append: '_title'
+      assign card_button_text_key = 'card_' | append: i | append: '_button_text'
+      assign card_link_key = 'card_' | append: i | append: '_link'
+
+      assign card_image = block.settings[card_image_key]
+      assign card_title = block.settings[card_title_key]
+      assign card_button_text = block.settings[card_button_text_key]
+      assign card_link = block.settings[card_link_key]
+    %}
+
+    <a
+      href="{% if card_link != blank %}{{ card_link }}{% else %}#{% endif %}"
+      class="tamuz-expanding-card-{{ tamuz_gen_id }} tamuz-expanding-card-{{ tamuz_gen_id }}-{{ i }}"
+      {% if card_image %}
+        style="background-image: url('{{ card_image | image_url: width: 1200 }}');"
+      {% endif %}
+      data-card-index="{{ i }}"
+    >
+      {% unless card_image %}
+        <div class="tamuz-expanding-card-placeholder-{{ tamuz_gen_id }}">
+          {{ 'image' | placeholder_svg_tag }}
+          <div class="tamuz-expanding-card-empty-state-{{ tamuz_gen_id }}">
+            Add image for card {{ i }}
+          </div>
+        </div>
+      {% endunless %}
+
+      <div class="tamuz-expanding-card-overlay-{{ tamuz_gen_id }}">
+        {% if card_title != blank %}
+          <h3 class="tamuz-expanding-card-title-{{ tamuz_gen_id }}">{{ card_title }}</h3>
+        {% else %}
+          <h3 class="tamuz-expanding-card-title-{{ tamuz_gen_id }}">Card {{ i }} Title</h3>
+        {% endif %}
+
+        {% if card_button_text != blank %}
+          <span class="tamuz-expanding-card-button-{{ tamuz_gen_id }}">
+            {{ card_button_text }}
+          </span>
+        {% else %}
+          <span class="tamuz-expanding-card-button-{{ tamuz_gen_id }}">
+            Shop Now
+          </span>
+        {% endif %}
+      </div>
+    </a>
+  {% endfor %}
+</expanding-cards-{{ tamuz_gen_id }}>
+
+<script>
+  (function() {
+    class ExpandingCards{{ tamuz_gen_id }} extends HTMLElement {
+      constructor() {
+        super();
+        this.lastExpandedCard = null;
+      }
+
+      connectedCallback() {
+        this.cards = this.querySelectorAll('.tamuz-expanding-card-{{ tamuz_gen_id }}');
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.cards.forEach((card) => {
+          card.addEventListener('mouseenter', () => {
+            this.expandCard(card);
+          });
+        });
+
+        this.addEventListener('mouseleave', () => {
+          this.resetCards();
+        });
+      }
+
+      expandCard(activeCard) {
+        this.lastExpandedCard = activeCard;
+        
+        this.cards.forEach((card) => {
+          card.classList.remove('expanded', 'compressed');
+          
+          if (card === activeCard) {
+            card.classList.add('expanded');
+          } else {
+            card.classList.add('compressed');
+          }
+        });
+      }
+
+      resetCards() {
+        this.cards.forEach((card) => {
+          card.classList.remove('compressed');
+          
+          if (card !== this.lastExpandedCard) {
+            card.classList.remove('expanded');
+          }
+        });
+      }
+    }
+
+    customElements.define('expanding-cards-{{ tamuz_gen_id }}', ExpandingCards{{ tamuz_gen_id }});
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Expanding cards",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "range",
+      "id": "conttamuzner_height",
+      "min": 400,
+      "max": 800,
+      "step": 20,
+      "unit": "px",
+      "label": "Conttamuzner height",
+      "default": 600
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "min": 2,
+      "max": 20,
+      "step": 2,
+      "unit": "px",
+      "label": "Gap between cards",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Border radius",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 1,
+      "step": 0.1,
+      "label": "Overlay opacity",
+      "default": 0.4
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 16,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "label": "Title size",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Button style"
+    },
+    {
+      "type": "color",
+      "id": "button_bg_color",
+      "label": "Background color",
+      "default": "#f12a0b"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_bg_color",
+      "label": "Hover background color",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "button_hover_text_color",
+      "label": "Hover text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "button_text_size",
+      "min": 12,
+      "max": 18,
+      "step": 1,
+      "unit": "px",
+      "label": "Button text size",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "button_border_radius",
+      "min": 0,
+      "max": 30,
+      "step": 2,
+      "unit": "px",
+      "label": "Button border radius",
+      "default": 6
+    },
+    {
+      "type": "header",
+      "content": "Card 1"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_1_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_1_title",
+      "label": "Title",
+      "default": "Explore Nature"
+    },
+    {
+      "type": "text",
+      "id": "card_1_button_text",
+      "label": "Button text",
+      "default": "Shop Collection"
+    },
+    {
+      "type": "url",
+      "id": "card_1_link",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Card 2"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_2_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_2_title",
+      "label": "Title",
+      "default": "Urban Adventures"
+    },
+    {
+      "type": "text",
+      "id": "card_2_button_text",
+      "label": "Button text",
+      "default": "Shop Collection"
+    },
+    {
+      "type": "url",
+      "id": "card_2_link",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Card 3"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_3_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_3_title",
+      "label": "Title",
+      "default": "Cultural Journey"
+    },
+    {
+      "type": "text",
+      "id": "card_3_button_text",
+      "label": "Button text",
+      "default": "Shop Collection"
+    },
+    {
+      "type": "url",
+      "id": "card_3_link",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Card 4"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_4_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_4_title",
+      "label": "Title",
+      "default": "Wellness & Health"
+    },
+    {
+      "type": "text",
+      "id": "card_4_button_text",
+      "label": "Button text",
+      "default": "Shop Collection"
+    },
+    {
+      "type": "url",
+      "id": "card_4_link",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Card 5"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_5_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_5_title",
+      "label": "Title",
+      "default": "Creative Arts"
+    },
+    {
+      "type": "text",
+      "id": "card_5_button_text",
+      "label": "Button text",
+      "default": "Shop Collection"
+    },
+    {
+      "type": "url",
+      "id": "card_5_link",
+      "label": "Link"
+    },
+    {
+      "type": "header",
+      "content": "Card 6"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_6_image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "card_6_title",
+      "label": "Title",
+      "default": "Technology & Innovation"
+    },
+    {
+      "type": "text",
+      "id": "card_6_button_text",
+      "label": "Button text",
+      "default": "Shop Collection"
+    },
+    {
+      "type": "url",
+      "id": "card_6_link",
+      "label": "Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Expanding cards"
+    }
+  ]
+}
+{% endschema %}
